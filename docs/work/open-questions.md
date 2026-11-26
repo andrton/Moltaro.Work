@@ -40,7 +40,14 @@ An entry is numbered `Q1`, `Q2`, … and keeps its number for good:
 
 ## Open
 
-None.
+### Q1. May the source of a project under MPL-2.0 be read?
+
+| | |
+| --- | --- |
+| **Found** | 26 November 2026, in the study of Epic 1 |
+| **Question** | The [rule on sources](process.md#code-modelled-on-another-project) names permissive licences (MIT, Apache-2.0, BSD), whose code may be read and modelled on, and GPL or LGPL, whose code is not opened. River is under MPL-2.0, which the rule does not name. May its source be read, in a study or as a model? |
+| **Until answered** | Taken as GPL/LGPL: River was studied from its documentation only, and no code of ours is modelled on its source |
+| **Decides** | The owner |
 
 ## Answered
 
