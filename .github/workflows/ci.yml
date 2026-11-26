@@ -1,0 +1,47 @@
+name: CI
+
+# Runs for every pull request and for every push to main, also when only documents
+# changed: the "build" check is required before a merge, and a required check that does
+# not run would block the pull request. See docs/work/branches.md.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: src
+
+# A test that hangs instead of failing ends its job after 15 minutes instead of GitHub's
+# default of six hours. The databases of the provider tests (PostgreSQL, SQL Server, MySQL)
+# are added to the "build" job as service containers by the sprint that adds those tests;
+# GitHub's Windows runners cannot run service containers, so the "windows" job runs the
+# tests that need no database.
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: src/global.json
+      - run: dotnet build --configuration Release
+      - run: dotnet format --verify-no-changes
+      - run: dotnet test --configuration Release --no-build
+
+  # The same lane on Windows. Only "build" is a required check of main.
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: src/global.json
+      - run: dotnet build --configuration Release
+      - run: dotnet test --configuration Release --no-build
+

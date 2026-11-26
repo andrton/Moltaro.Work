@@ -55,3 +55,15 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# IDE and user-specific files
+.vs/
+.idea/
+*.user
+*.suo
+
+# Machine-local data, credentials and raw results
+.local/
+.env.*
+!.env.example
+*.local.json
