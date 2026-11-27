@@ -54,8 +54,8 @@ The item carries no payload: its handler reads the object's current state.
 
 For example, the key `invoice-42` means "recompute the totals of invoice 42". Changes made
 while the item waits leave that one item. Changes made while it runs add one more run, not
-one per change. So a burst of changes costs at most the run in progress plus one more, and
-the last run reads the latest state.
+one per change. So the changes made during one run cost one more run, however many they
+are, and the last run reads the latest state.
 
 An enqueue that names no due time is due at once, and a worker starts on it right away. An
 application that wants a burst collected names a due time, for example a second ahead:
