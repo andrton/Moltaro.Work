@@ -21,6 +21,23 @@ defaults:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # The tests of the tag run as in CI, with the databases of the providers as service
+    # containers; their throwaway connection strings are named here and in ci.yml only
+    # (exception X1 of docs/work/exceptions.md).
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: ci-throwaway
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      MOLTARO_WORK_POSTGRESQL: Host=localhost;Port=5432;Username=postgres;Password=ci-throwaway;Database=postgres
     steps:
       - uses: actions/checkout@v7
         with:

@@ -16,14 +16,29 @@ defaults:
     working-directory: src
 
 # A test that hangs instead of failing ends its job after 15 minutes instead of GitHub's
-# default of six hours. The databases of the provider tests (PostgreSQL, SQL Server, MySQL)
-# are added to the "build" job as service containers by the sprint that adds those tests;
-# GitHub's Windows runners cannot run service containers, so the "windows" job runs the
-# tests that need no database.
+# default of six hours. The "build" job runs the tests of each provider on its database,
+# a service container; the connection strings of those containers, with throwaway
+# passwords, are named here and in publish.yml only (exception X1 of
+# docs/work/exceptions.md). GitHub's Windows runners cannot run service containers, so
+# the "windows" job runs only the tests that need no database.
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: ci-throwaway
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      MOLTARO_WORK_POSTGRESQL: Host=localhost;Port=5432;Username=postgres;Password=ci-throwaway;Database=postgres
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v6
@@ -33,7 +48,8 @@ jobs:
       - run: dotnet format --verify-no-changes
       - run: dotnet test --configuration Release --no-build
 
-  # The same lane on Windows. Only "build" is a required check of main.
+  # The same lane on Windows, with the tests that need no database. Only "build" is a
+  # required check of main.
   windows:
     runs-on: windows-latest
     timeout-minutes: 15
@@ -43,5 +59,5 @@ jobs:
         with:
           global-json-file: src/global.json
       - run: dotnet build --configuration Release
-      - run: dotnet test --configuration Release --no-build
+      - run: dotnet test --configuration Release --no-build --project Moltaro.Work.Tests
 
