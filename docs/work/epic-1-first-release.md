@@ -404,7 +404,7 @@ tested in `Moltaro.Work.Tests`; "conformance" is the suite on each real database
   `high`, and its brief says that KISS holds there as everywhere. In Stage 1, by the owner's
   decision of 27 November 2026, S4 runs beside S3, each in a checkout of its own and merged
   in turn, and one architect's review of the whole code base follows S4 instead of one
-  after each sprint.
+  after S3.
 - **Stages and their contracts.** The contract of Stage 1 is written out below and is
   approved with this plan. For a later stage the briefs say what the sprint must achieve and
   the cases that prove it, not how its SQL or its loop is built; before the stage begins,
@@ -1326,7 +1326,8 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
   enqueue one key at once leave one item: at REPEATABLE READ the second either fails with
   the error its provider documents (W10) or waits and reports `Coalesced`. The queue's
   member is signalled after `CommitAsync`, not after a rollback, a failed commit or a failed
-  enqueue; that case moves `LoopbackSignalHost` to TestSupport. The sample
+  enqueue; that case moves `LoopbackSignalHost` to TestSupport, where it also replaces the
+  `LoopbackSignals` of `Moltaro.Work.Hosting.Tests`. The sample
   `EnqueueInTransaction` runs to the end.
 - **Out of scope.** Claims, logs, runs, scopes.
 
@@ -1378,8 +1379,8 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
   the decision component with the waking, then the lanes with heartbeats and stop.
 - **Acceptance.** Policy tests of the wait and of lease loss at their edges. Conformance,
   area `Worker`, whose class S2 left empty and S7 fills, with an in-process `SignalHost`
-  and one `FakeTimeProvider` for host and client, which `LoopbackSignalHost` takes as a parameter: a commit starts the handler
-  without moving a clock; an item due in 30 seconds starts once both clocks moved; an idle
+  and one `FakeTimeProvider` for host and client, which `LoopbackSignalHost` takes as a
+  parameter: a commit starts the handler without moving a clock; an item due in 30 seconds starts once both clocks moved; an idle
   worker sends no statement before its idle bound and
   one then, counted through the driver's tracing; two workers of one lane each share a
   commit of three items without waiting for an idle bound, and a due time reached while one
@@ -1405,7 +1406,8 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
   worker included; the sample `GenericHostWorker` runs to the end.
 - **Acceptance.** S4's tests of `Registration` pass, the log lines read through a logger
   provider of the test. The hosting tests use PostgreSQL from here on, so the `windows` job
-  runs `Moltaro.Work.Tests` only.
+  runs `Moltaro.Work.Tests` only; S4's store double `HandOutWorkStore` and the job's step for
+  `Moltaro.Work.Hosting.Tests` go then, unless S8's contract keeps them.
 - **Out of scope.** What the worker does beyond S7.
 
 ## Stage 3: hardening and widening on PostgreSQL
