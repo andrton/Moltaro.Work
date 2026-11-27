@@ -1289,7 +1289,7 @@ Opus 5.5, `xhigh` · **Needs:** S2.
 - **To read.** S1's brief; `SignalServiceCollectionExtensions` of `Moltaro.Signals.Hosting`
   0.1.0.
 - **Acceptance.** Tests that pass: the argument checks of both methods; the references of
-  `Moltaro.Work.Hosting` (assemblies of .NET, `Microsoft.Extensions.*`, `Moltaro.Work`,
+  `Moltaro.Work.Hosting` (assemblies of .NET, `Microsoft.Extensions.*.Abstractions`, `Moltaro.Work`,
   `Moltaro.Signals`); `dotnet pack -c Release` from `src` produces exactly the five
   packages. Skipped, folder `Registration`: the client resolves over the registered store
   and `ISignals`; a worker uses a `WorkClient` that the application registered without
