@@ -120,11 +120,18 @@ public sealed class WorkWorker
     /// <see cref="WorkWorkerOptions.FailureDelay"/> and tries again.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// It is raised on the worker's loop, never while the worker holds a lock, so a subscriber delays the worker while
-    /// it runs. An exception thrown by a subscriber ends <see cref="RunAsync"/> with that exception, after the worker
-    /// stopped as its stop does.
+    /// it runs.
+    /// </para>
+    /// <para>
+    /// Every subscriber is called on its own, in the order of subscription, also when an earlier one threw. An
+    /// exception thrown by a subscriber ends <see cref="RunAsync"/>, after the worker stopped as its stop does: with
+    /// that exception when one subscriber threw, and with an <see cref="AggregateException"/> of all of them when
+    /// more than one threw.
+    /// </para>
     /// </remarks>
-#pragma warning disable CS0067 // Raised by the worker's loop, which comes with the implementation of RunAsync.
+#pragma warning disable CS0067 // Exception X2: nothing raises Failed until S7, which raises it and removes this pragma.
     public event EventHandler<WorkWorkerFailedEventArgs>? Failed;
 #pragma warning restore CS0067
 
