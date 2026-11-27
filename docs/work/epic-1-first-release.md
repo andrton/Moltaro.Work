@@ -396,7 +396,10 @@ tested in `Moltaro.Work.Tests`; "conformance" is the suite on each real database
 - **The architect's review** follows every merged sprint, as the next coordinator's first
   task, and reads the whole code base after a stage's last sprint. A refactoring sprint
   (S7R after S7) exists only when an entry of its list was taken; it has a refactorer at
-  `high`, and its brief says that KISS holds there as everywhere.
+  `high`, and its brief says that KISS holds there as everywhere. In Stage 1, by the owner's
+  decision of 27 November 2026, S4 runs beside S3, each in a checkout of its own and merged
+  in turn, and one architect's review of the whole code base follows S4 instead of one
+  after each sprint.
 - **Stages and their contracts.** The contract of Stage 1 is written out below and is
   approved with this plan. For a later stage the briefs say what the sprint must achieve and
   the cases that prove it, not how its SQL or its loop is built; before the stage begins,
@@ -1211,7 +1214,7 @@ Opus 5.5, `xhigh` · **Needs:** S2.
 ### S4 · The hosting contract and the samples
 
 **Track:** full · **Branch:** `epic-1/sprint-04-hosting-contract` · **Implementer:** Opus
-5.5, `high` · **Needs:** S3.
+5.5, `high` · **Needs:** S2; runs beside S3 (Rules for every sprint, "The architect's review").
 
 - **Goal.** The package `Moltaro.Work.Hosting` exists, refusing after its checks; the
   samples show the whole intended use and report where they stop; `dotnet pack` produces the
