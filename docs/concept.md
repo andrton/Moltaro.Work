@@ -101,9 +101,9 @@ dashboard.
    process that committed it died before setting the signal.
 4. **A claim is exclusive.** A worker claims due items in a batch. Each claimed item is
    leased to it and carries a new fence. Two workers never hold the same item.
-5. **Every write of a holder is fenced.** Heartbeat, completion, retry and giving up succeed
-   only with the item's current fence. A holder whose lease was lost and reclaimed cannot
-   complete the item.
+5. **Every write of a holder is fenced.** Heartbeat, completion, retry, giving up and release
+   succeed only with the item's current fence. A holder whose lease was lost and reclaimed
+   cannot complete the item.
 6. **A lease is kept alive while the handler runs**, by a heartbeat. An item whose lease ends
    without a completion becomes due again, and that counts as an attempt.
 7. **Failure is retried, then given up.** A handler that fails, or asks for a retry, makes its
@@ -128,9 +128,10 @@ A provider implements the store operations of the core for one database:
 - enqueue, including the coalescing upsert;
 - claim a batch;
 - heartbeat;
-- complete, retry and give up, all fenced;
+- complete, retry, give up and release, all fenced;
 - requeue;
 - the earliest due time;
+- check the database: the schema's version and the settings the provider needs;
 - delete expired items in a batch.
 
 It ships the schema of the core's tables as a versioned script; the application applies it
