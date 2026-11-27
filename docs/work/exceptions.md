@@ -30,11 +30,31 @@ An entry is a table:
 
 ## In force
 
-None.
+### X2. A suppressed warning on `WorkWorker.Failed` until S7
+
+| | |
+| --- | --- |
+| **Rule** | "C# on .NET 10, nullable enabled, warnings are errors." |
+| **Departure** | `#pragma warning disable CS0067` and its `restore` around the event `Failed` in `src/Moltaro.Work/WorkWorker.cs` |
+| **Why** | The event is part of the contract of S1, but nothing raises it before S7 implements `RunAsync`. Until then the compiler reports CS0067, "the event is never used", and the build fails |
+| **Kept small by** | One warning, on one member, with a comment that names S7 |
+| **Approved** | By the owner, 27 November 2026 |
+| **Since** | Epic 1, S1 |
+| **Until** | Epic 1, S7, which raises `Failed` and removes the pragma |
 
 ## Approved, not in force yet
 
-None.
+### X1. The connection strings of the CI service containers
+
+| | |
+| --- | --- |
+| **Rule** | "No secrets, tokens, machine paths, connection strings, build output or run output in Git." |
+| **Departure** | `.github/workflows/ci.yml` and `.github/workflows/publish.yml` name the connection strings of their own PostgreSQL, SQL Server and MySQL service containers |
+| **Why** | The tests of each provider need their real database, and the passwords of these containers exist only inside the job; a repository secret would protect nothing |
+| **Kept small by** | Only those two files, only their own service containers, with throwaway passwords; nothing else in the repository names a connection string |
+| **Approved** | By the owner, 27 November 2026, as the answer to PQ5 of the Epic 1 plan |
+| **Since** | Not yet; Epic 1, S2 puts it in force |
+| **Until** | Permanent |
 
 ## Ended
 

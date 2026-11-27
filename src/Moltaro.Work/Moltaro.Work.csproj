@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Durable background work for .NET in the application's own relational database: the database-neutral core. Items are enqueued in the caller's transaction, come in three shapes (coalescing per key, log, run), are claimed under a lease with a fence, retried with a backoff, given up as dead items and deleted by retention; workers wake through Moltaro.Signals, never on a polling interval. A provider package holds the SQL of each database.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The decision component has no public surface: its tests address it directly. -->
+    <InternalsVisibleTo Include="Moltaro.Work.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moltaro.Signals" />
+  </ItemGroup>
+
+</Project>

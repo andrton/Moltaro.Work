@@ -1,7 +1,7 @@
 # Epic 1: First release
 
-**Status:** planned, 27 November 2026; waiting for the owner's approval of this plan and,
-with it, of the contract of Stage 1. No sprint has started.
+**Status:** approved by the owner on 27 November 2026, with the contract of Stage 1; S1
+done, S2 next.
 
 ## Standing permission
 
@@ -137,12 +137,21 @@ The epic is done when all of the following hold.
 ### Changes of the contract
 
 A sprint that changes the draft contract ([process](process.md#the-plan)) lists the change
-here for the owner, with the sprint and the reason. None yet.
+here for the owner, with the sprint and the reason.
+
+- **S1, `WorkWorker.Failed`.** Every subscriber is called on its own, also when an earlier
+  one threw. The owner decided it on 27 November 2026, so that one failing subscriber does
+  not keep the others from the report. What follows for `RunAsync` is in S1's brief, under
+  `WorkWorker(...)`. S7 implements it.
 
 ## Open questions
 
 Each question changes a guarantee, a decision or a rule, so it is the owner's. The contract
 of Stage 1 is written with the recommended answer; another answer changes the brief named.
+
+**Answered.** The owner took every recommended answer on 27 November 2026, by merging this
+plan: PQ1 (a), PQ2 (a), PQ3 (a) with the wording it gives, PQ4 (a), PQ5 (a) with the
+acceptance of the SQL Server licence, PQ6 (a), PQ7 (b) and PQ8 (b).
 
 ### PQ1. What an enqueue does to a dead coalescing item
 
@@ -436,7 +445,7 @@ two more databases against a finished conformance suite.
 
 | Sprint | Result | Track | Status |
 | --- | --- | --- | --- |
-| S1 | The core contract and the test lane | Full | Not started |
+| S1 | The core contract and the test lane | Full | Done, in three review rounds |
 | S2 | The PostgreSQL provider contract and schema | Full | Not started |
 | S3 | The SQL Server and MySQL provider contracts and schemas | Full | Not started |
 | S4 | The hosting contract and the samples | Full | Not started |
@@ -714,8 +723,12 @@ words or by pointing to the type that states them.
     `WaitAsync` that fails other than by the stop's cancellation ends it with that
     exception, after the stop, because the worker could then wait for nothing. `Failed` is
     raised on the worker's loop, never under a lock, once for every statement of the worker
-    that failed, before the worker waits `FailureDelay`; an exception thrown by a subscriber
-    ends `RunAsync` with that exception, after the stop.
+    that failed, before the worker waits `FailureDelay`. Every subscriber is called on its
+    own, in the order of subscription, also when an earlier one threw (the owner,
+    27 November 2026). A raise in which a subscriber threw is the last: the worker stops
+    and raises `Failed` no more, and `RunAsync` ends after the stop with that raise's
+    exception, or with an `AggregateException` of that raise's exceptions when more than one
+    subscriber threw.
   - `IWorkStore`: documents that it is the provider contract, implemented once per
     database; that every method may be called concurrently; that the core calls it only
     with arguments it has checked, so an implementation checks only what the core cannot,
@@ -1214,7 +1227,10 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
   internal types named with the stage's contract. No lock is held across the await of a
   handler, and each claim's lease is judged by its own heartbeats. Until S9 a failed
   handler's item is left to its lease, and the refusal of `RetryAsync` is reported through
-  `Failed`. If one agent and one review cannot carry S7, the stage's contract splits it:
+  `Failed`. `Failed` is raised by a loop over its invocation list
+  (`Delegate.EnumerateInvocationList`), one subscriber at a time, and the
+  `#pragma warning disable CS0067` of `WorkWorker.cs` is removed, which ends exception X2.
+  If one agent and one review cannot carry S7, the stage's contract splits it:
   the decision component with the waking, then the lanes with heartbeats and stop.
 - **Acceptance.** Policy tests of the wait and of lease loss at their edges. Conformance,
   area `Worker`, with an in-process `SignalHost` and one `FakeTimeProvider` for host and
@@ -1229,7 +1245,9 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
   on another lane of its own, has its token cancelled and its completion refused; a stop
   cancels the handlers and `RunAsync` completes after they ended; a wrong schema version, or
   a database not in UTF8, ends `RunAsync` with `InvalidOperationException`; an unreachable
-  database raises `Failed` and the worker goes on after `FailureDelay`; a failing
+  database raises `Failed` and the worker goes on after `FailureDelay`; of two subscribers
+  to `Failed`, the second is called when the first throws, `Failed` is not raised again,
+  and `RunAsync` then ends with the first one's exception, after the stop; a failing
   `WaitAsync` ends `RunAsync`. The sample `WorkerWithoutHost` runs to the end.
 - **Out of scope.** Retries, hosting.
 
