@@ -17,7 +17,9 @@ An application enqueues an item in its own transaction and writes the item's han
 the library does the rest. Workers wake through Moltaro.Signals and at the earliest due
 time, never on a fixed polling interval.
 
-What exists today is the **concept**, nothing else: no code is written yet. The
+What exists today is the **concept** and the **public contract of the core**, the package
+`Moltaro.Work`: its types are documented and check their arguments and options, and every
+other entry point throws `NotSupportedException`. Nothing else is implemented yet. The
 [concept](docs/concept.md) is the authority for what the library guarantees: its shapes,
 its rules, its decisions D1–D16 and its non-goals. `README.md` says what works today; a
 feature is delivered when the README says so.
@@ -29,7 +31,7 @@ of its modules, tables or customers, in code, tests, samples or documents.
 
 | Path | Contents |
 | --- | --- |
-| `src` | The solution, every project and the build settings. Run `dotnet` from here. The solution is empty until the first sprint adds its projects |
+| `src` | The solution, every project and the build settings. Run `dotnet` from here. The solution holds the projects created so far |
 | `docs/concept.md` | Where the library comes from, its semantics, decisions, non-goals and quality bar |
 | `docs/storage.md` | (planned) The provider contract and the schema of each database, written with the sprint that introduces them |
 | `docs/explanations` | (planned) Explanations of the architecture and of how the library works, each as Markdown and as HTML |
@@ -256,14 +258,16 @@ Writing code:
 - **Tests use the public API.** The decision component has no public surface and is tested
   directly, through `InternalsVisibleTo` for its test project. Each such test states a rule
   of the concept, never how the code happens to be built.
-- **Every rule of the concept's section 3 has a deterministic test** of the decision
-  component.
+- **Every rule of the concept's section 3 has a deterministic test**, of the pure component
+  where .NET decides and of the conformance suite where SQL decides, and rule 12 is held by
+  the review of the SQL.
 - **Time is injected through `TimeProvider`.** A test waits for an observed event; it never
   sleeps and never polls with a delay.
-- **The conformance suite is written once**, against the provider contract, and run by
-  each provider's test project against its real database: PostgreSQL, SQL Server and
-  MySQL, in CI as service containers and locally in containers. It includes the
-  concurrency cases:
+- **The conformance suite is written once**, against the provider contract, as abstract
+  test classes in `Moltaro.Work.TestSupport`, folder `Conformance`. They run only in the
+  classes each provider's test project derives from them, against its real database:
+  PostgreSQL, SQL Server and MySQL, in CI as service containers and locally in containers.
+  It includes the concurrency cases:
   - many workers claiming at once;
   - a worker that dies holding an item;
   - a holder that writes after its lease was reclaimed;
@@ -273,7 +277,8 @@ Writing code:
 - **A test project is organized like a library:** a folder is a namespace and one area of
   behavior. Code that two or more test projects need lives once, in a
   `Moltaro.Work.TestSupport` project, created when the second test project needs it; it is
-  never shipped and contains no tests.
+  never shipped and runs no tests of its own: the conformance suite in it runs only in the
+  provider test projects.
 - **A feature that is not implemented has its tests written and marked
   `[Fact(Skip = ...)]`** with one shared reason. Skipping is never used for a flaky test.
 - **The contract and the tests come before the implementation.** On the full track of the

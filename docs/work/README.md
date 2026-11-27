@@ -9,10 +9,10 @@ delivered over several sprints.
 
 ## The repository as it is set up
 
-- `src` holds the build settings and an empty solution, so that CI runs from the first pull
-  request. The first sprint adds the projects that `AGENTS.md` lists as planned.
-- `src/global.json` names no test runner yet. The sprint that adds the first test project
-  chooses it with the test framework and adds it there.
+- `src` holds the build settings and the solution with the projects of the first sprint:
+  `Moltaro.Work`, `Moltaro.Work.Tests` and `Moltaro.Work.Samples`. Each later sprint adds
+  the projects that `AGENTS.md` lists as planned when it first needs them.
+- `src/global.json` names Microsoft.Testing.Platform as the test runner, for xUnit.net v3.
 - The databases of the provider tests are added to CI by the sprint that adds those tests.
 - The rules of `main` and of release tags are files in `.github/rulesets`. GitHub applies
   them only after the owner does, as [branches and releases](branches.md#setting-it-up-on-github)

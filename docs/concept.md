@@ -76,12 +76,14 @@ dashboard.
 
 | Shape | One item per | Enqueue while one is waiting | Enqueue while one runs | After success |
 | --- | --- | --- | --- | --- |
-| **Coalescing** | Key | Nothing new; the due time becomes the earlier of the two | The item runs once more after the current run | Deleted |
-| **Log** | Enqueue | A new item | A new item | Deleted, or kept for its retention |
+| **Coalescing** | Key | Nothing new; the due time becomes the earlier of the two while the item's attempts are at zero, and stays while it waits for a retry | The item runs once more after the current run | Deleted |
+| **Log** | Enqueue | A new item | A new item | Deleted |
 | **Run** | Enqueue, or key while active | A new item, or none while one with the same key is active | Same | Kept with its outcome for its retention |
 
 - A coalescing item carries no payload: its key names the object, and the handler reads its
   current state.
+- An enqueue of a dead coalescing item revives it: the item is waiting again, with its
+  attempts counted from zero.
 - A log item and a run carry a payload that the application serializes.
 - A run keeps its status, attempts, outcome and times, so that an application can show its
   history.
@@ -208,7 +210,9 @@ stops.
 ## 9. Quality bar
 
 **Tests:**
-- every rule of section 3 has a deterministic test of the pure component;
+- every rule of section 3 has a deterministic test, of the pure component where .NET decides
+  and of the conformance suite where SQL decides, and rule 12 is held by the review of the
+  SQL;
 - every provider passes the conformance suite on its real database in CI;
 - no test sleeps; time is injected through `TimeProvider`.
 
