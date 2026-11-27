@@ -140,9 +140,9 @@ A sprint that changes the draft contract ([process](process.md#the-plan)) lists 
 here for the owner, with the sprint and the reason.
 
 - **S1, `WorkWorker.Failed`.** Every subscriber is called on its own, also when an earlier
-  one threw, and more than one exception ends `RunAsync` as an `AggregateException`. The
-  owner decided it on 27 November 2026, so that one failing subscriber does not keep the
-  others from the report. S7 implements it.
+  one threw. The owner decided it on 27 November 2026, so that one failing subscriber does
+  not keep the others from the report. What follows for `RunAsync` is in S1's brief, under
+  `WorkWorker(...)`. S7 implements it.
 
 ## Open questions
 
@@ -724,10 +724,11 @@ words or by pointing to the type that states them.
     exception, after the stop, because the worker could then wait for nothing. `Failed` is
     raised on the worker's loop, never under a lock, once for every statement of the worker
     that failed, before the worker waits `FailureDelay`. Every subscriber is called on its
-    own, in the order of subscription, also when an earlier one threw; an exception thrown
-    by a subscriber ends `RunAsync` after the stop, with that exception, or with an
-    `AggregateException` of all of them when more than one threw (the owner,
-    27 November 2026).
+    own, in the order of subscription, also when an earlier one threw (the owner,
+    27 November 2026). A raise in which a subscriber threw is the last: the worker stops
+    and raises `Failed` no more, and `RunAsync` ends after the stop with that raise's
+    exception, or with an `AggregateException` of that raise's exceptions when more than one
+    subscriber threw.
   - `IWorkStore`: documents that it is the provider contract, implemented once per
     database; that every method may be called concurrently; that the core calls it only
     with arguments it has checked, so an implementation checks only what the core cannot,
@@ -1245,8 +1246,8 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
   cancels the handlers and `RunAsync` completes after they ended; a wrong schema version, or
   a database not in UTF8, ends `RunAsync` with `InvalidOperationException`; an unreachable
   database raises `Failed` and the worker goes on after `FailureDelay`; of two subscribers
-  to `Failed`, the second is called when the first throws, and `RunAsync` then ends with the
-  first one's exception, after the stop; a failing
+  to `Failed`, the second is called when the first throws, `Failed` is not raised again,
+  and `RunAsync` then ends with the first one's exception, after the stop; a failing
   `WaitAsync` ends `RunAsync`. The sample `WorkerWithoutHost` runs to the end.
 - **Out of scope.** Retries, hosting.
 

@@ -67,6 +67,15 @@ An entry is numbered `Q1`, `Q2`, … and keeps its number for good:
 | **Until answered** | The plan keeps W16 as written; no sprint of Stage 1 implements it. The question is answered before the contract of Stage 2 is approved |
 | **Decides** | The owner |
 
+### Q4. A cancellation that the SQL Server driver reports as its own error
+
+| | |
+| --- | --- |
+| **Found** | 27 November 2026, in round 2 of the review of S1 |
+| **Question** | `IWorkStore` says, by the cancellation rule of the [plan](epic-1-first-release.md#rules-for-every-public-member), that a cancellation that comes after the call ends the task cancelled. Microsoft.Data.SqlClient may report a command cancelled through its token as a `SqlException` instead of an `OperationCanceledException`, and W10 forbids a provider to catch a driver error in an enqueue. Can the SQL Server provider keep both rules, and if not, which one gives way? |
+| **Until answered** | The contract keeps the rule as written. S3, which documents the errors of each enqueue of SQL Server and MySQL, does not start before the answer |
+| **Decides** | The planner, as it follows from rules that stand, and reports to the owner |
+
 ## Answered
 
 None.
