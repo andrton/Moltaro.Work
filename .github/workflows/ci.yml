@@ -60,4 +60,5 @@ jobs:
           global-json-file: src/global.json
       - run: dotnet build --configuration Release
       - run: dotnet test --configuration Release --no-build --project Moltaro.Work.Tests
+      - run: dotnet test --configuration Release --no-build --project Moltaro.Work.Hosting.Tests
 

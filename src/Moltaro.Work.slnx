@@ -1,6 +1,7 @@
 <Solution>
   <Project Path="Moltaro.Work/Moltaro.Work.csproj" />
   <Project Path="Moltaro.Work.Hosting/Moltaro.Work.Hosting.csproj" />
+  <Project Path="Moltaro.Work.Hosting.Tests/Moltaro.Work.Hosting.Tests.csproj" />
   <Project Path="Moltaro.Work.PostgreSql/Moltaro.Work.PostgreSql.csproj" />
   <Project Path="Moltaro.Work.PostgreSql.Tests/Moltaro.Work.PostgreSql.Tests.csproj" />
   <Project Path="Moltaro.Work.Samples/Moltaro.Work.Samples.csproj" />
