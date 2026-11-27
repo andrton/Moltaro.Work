@@ -1,7 +1,7 @@
 # Epic 1: First release
 
 **Status:** approved by the owner on 27 November 2026, with the contract of Stage 1; S1,
-S1R and S2 done, S3 next.
+S1R, S2 and S3 done, S4 next.
 
 ## Standing permission
 
@@ -159,8 +159,8 @@ here for the owner, with the sprint and the reason.
   does not read. S4 makes it.
 - **S3, a primary key on the version table.** `moltaro_work_schema` gets the primary key
   `moltaro_work_schema_pk (version)` in all three scripts of version 1. Without it, MySQL with
-  `sql_require_primary_key` refuses the script, and replication that needs a key, MySQL's
-  Group Replication or PostgreSQL's logical replication, refuses to change the version row.
+  `sql_require_primary_key` refuses the script, MySQL's Group Replication refuses every write
+  to the table, and PostgreSQL's logical replication refuses to change the version row.
   From the review of S3, decided by the coordinator while the schema is a draft. S3 makes it.
 
 ## Open questions
@@ -481,7 +481,7 @@ two more databases against a finished conformance suite.
 | S1 | The core contract and the test lane | Full | Done, in three review rounds |
 | S1R | The architect's list after S1 | Refactoring | Done, in two review rounds |
 | S2 | The PostgreSQL provider contract and schema | Full | Done, in two review rounds |
-| S3 | The SQL Server and MySQL provider contracts and schemas | Full | Not started |
+| S3 | The SQL Server and MySQL provider contracts and schemas | Full | Done, in two review rounds |
 | S4 | The hosting contract and the samples | Full | Not started |
 | S5 | Coalescing enqueue and the commit that wakes, on PostgreSQL | Full | Not started |
 | S6 | Claim, lease, heartbeat and fenced completion | Full | Not started |
@@ -1103,10 +1103,12 @@ Opus 5.5, `xhigh` · **Needs:** S2.
   - `MySqlWorkStore` documents: MySQL 8.4 or later with InnoDB and row-based binary
     logging, because skip-locked reads are unsafe for statement-based replication; MariaDB
     is not supported; its own transactions run at READ COMMITTED, which it sets on each; at
-    MySQL's default REPEATABLE READ, concurrent enqueues of one key in callers'
-    transactions can deadlock (1213) or wait out `innodb_lock_wait_timeout` (1205), as
-    `MySqlException` (W10).
-- **The schemas, version 1.** `Schema/version-1.sql` of each, written as it stands here.
+    any isolation, concurrent enqueues of one key in callers' transactions can deadlock
+    (1213) or wait out `innodb_lock_wait_timeout` (1205), as `MySqlException` (W10), as the
+    review of S3 corrected.
+- **The schemas, version 1.** `Schema/version-1.sql` of each, written as it stands here,
+  with the primary key of `moltaro_work_schema` that "Changes of the contract" adds to all
+  three scripts.
 
   ```sql
   -- Moltaro.Work schema version 1, SQL Server 2019 or later. Needs READ_COMMITTED_SNAPSHOT ON.
