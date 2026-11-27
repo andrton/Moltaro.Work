@@ -30,8 +30,8 @@ public interface IWorkHandler
     /// <param name="cancellationToken">
     /// Cancelled when the worker stops, or when the lease of this attempt is lost. After a stop began, an attempt that
     /// ends with anything but <see cref="WorkHandlerResultEnum.Completed"/> is released: the item is waiting again at
-    /// once, with the attempts it had before this claim. After the lease was lost, the worker's write of the outcome is
-    /// refused, because the item may have a new holder.
+    /// once, with the attempts it had before this claim. When another claim took the item after the lease was lost,
+    /// the worker's write of the outcome is refused, because the item has a new holder.
     /// </param>
     /// <returns>The outcome of the attempt.</returns>
     Task<WorkHandlerResultEnum> HandleAsync(WorkItem item, CancellationToken cancellationToken);

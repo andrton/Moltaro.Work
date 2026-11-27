@@ -155,7 +155,8 @@ public sealed class WorkWorker
     /// did not take because a transaction keeps it locked is waited for in the same way. Because a set of a signal
     /// wakes one member of the group, a worker that knows of claimable work it does not take sets the queue's key
     /// itself: after a claim that filled its free lanes, when a due time it knows of is reached while no lane is free,
-    /// and after a write of its own that makes an item waiting at once.
+    /// once for that time, and after a write of its own that makes an item waiting at once. After a write of its own
+    /// that makes an item waiting later, its next deadline is at most that delay.
     /// </para>
     /// <para>
     /// When <paramref name="stoppingToken"/> is cancelled, the worker cancels the token of every running handler and

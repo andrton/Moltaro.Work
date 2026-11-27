@@ -22,18 +22,18 @@ public sealed class WorkQueueOptions
 
     /// <summary>
     /// The delay after the first failed attempt; it doubles after each further one, up to <see cref="MaxRetryDelay"/>.
-    /// 10 seconds by default.
+    /// Greater than zero and at most 3650 days; 10 seconds by default.
     /// </summary>
     public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(10);
 
     /// <summary>
-    /// The longest delay before a retry. At least <see cref="RetryDelay"/>; 1 hour by default.
+    /// The longest delay before a retry. At least <see cref="RetryDelay"/> and at most 3650 days; 1 hour by default.
     /// </summary>
     public TimeSpan MaxRetryDelay { get; set; } = TimeSpan.FromHours(1);
 
     /// <summary>
-    /// How long dead items and finished runs are kept, from the time they ended, before they are deleted. 7 days by
-    /// default.
+    /// How long dead items and finished runs are kept, from the time they ended, before they are deleted. Greater than
+    /// zero and at most 3650 days; 7 days by default.
     /// </summary>
     public TimeSpan Retention { get; set; } = TimeSpan.FromDays(7);
 

@@ -1,6 +1,6 @@
 using System.Data.Common;
 
-namespace Moltaro.Work.Tests.Enqueue;
+namespace Moltaro.Work.Tests.Doubles;
 
 // The arguments of one call of IWorkStore.EnqueueAsync, as the store received them.
 internal sealed record EnqueueCall(

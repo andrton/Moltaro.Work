@@ -1,4 +1,5 @@
 using Moltaro.Signals;
+using Moltaro.Work.Tests.Doubles;
 
 namespace Moltaro.Work.Tests.Enqueue;
 
@@ -272,7 +273,35 @@ public sealed class EnqueueTests : IAsyncDisposable
         Assert.Equal(2, _store.EnqueueCalls.Count);
     }
 
-    // CommitAsync is not implemented yet, but its call counts.
+    [Fact]
+    public async Task An_enqueue_whose_token_was_already_cancelled_leaves_the_transaction_open_for_enqueues_and_the_commit()
+    {
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        Task<WorkEnqueueResult> cancelled = _transaction.EnqueueAsync(Balances, key: "invoice-7", cancellationToken: Cancelled);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelled);
+
+        await _transaction.EnqueueAsync(Balances, key: "invoice-7", cancellationToken: cancellationToken);
+
+        Assert.Single(_store.EnqueueCalls);
+        CallCommit();
+    }
+
+    [Fact]
+    public async Task An_enqueue_refused_by_an_argument_check_leaves_the_transaction_open_for_enqueues_and_the_commit()
+    {
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        Assert.Throws<ArgumentException>(
+            "key",
+            () => { _ = _transaction.EnqueueAsync(Balances, key: null, cancellationToken: cancellationToken); });
+
+        await _transaction.EnqueueAsync(Balances, key: "invoice-7", cancellationToken: cancellationToken);
+
+        Assert.Single(_store.EnqueueCalls);
+        CallCommit();
+    }
+
+    // CommitAsync is not implemented yet, but its call counts. Getting as far as NotSupportedException shows that its
+    // checks passed.
     private void CallCommit()
     {
         Assert.Throws<NotSupportedException>(() => { _ = _transaction.CommitAsync(TestContext.Current.CancellationToken); });

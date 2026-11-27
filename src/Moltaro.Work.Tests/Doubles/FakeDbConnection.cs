@@ -1,9 +1,10 @@
 using System.Data;
 using System.Data.Common;
 
-namespace Moltaro.Work.Tests.Enqueue;
+namespace Moltaro.Work.Tests.Doubles;
 
-// A connection that touches no database: the core only hands it to the store, so every member throws.
+// The caller's connection in every area of these tests. It touches no database: the core only hands it to the store,
+// so every member throws.
 internal sealed class FakeDbConnection : DbConnection
 {
     [System.Diagnostics.CodeAnalysis.AllowNull]

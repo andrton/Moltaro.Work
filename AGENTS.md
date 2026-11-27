@@ -18,8 +18,9 @@ the library does the rest. Workers wake through Moltaro.Signals and at the earli
 time, never on a fixed polling interval.
 
 What exists today is the **concept** and the **public contract of the core**, the package
-`Moltaro.Work`: its types are documented and check their arguments and options, and every
-other entry point throws `NotSupportedException`. Nothing else is implemented yet. The
+`Moltaro.Work`, documented: its types check their arguments and options, `WorkClient.Join`
+and `WorkTransaction.EnqueueAsync` hand a checked enqueue to the provider, and every other
+entry point throws `NotSupportedException`. Nothing else is implemented yet. The
 [concept](docs/concept.md) is the authority for what the library guarantees: its shapes,
 its rules, its decisions D1–D16 and its non-goals. `README.md` says what works today; a
 feature is delivered when the README says so.
@@ -263,11 +264,10 @@ Writing code:
   the review of the SQL.
 - **Time is injected through `TimeProvider`.** A test waits for an observed event; it never
   sleeps and never polls with a delay.
-- **The conformance suite is written once**, against the provider contract, as abstract
-  test classes in `Moltaro.Work.TestSupport`, folder `Conformance`. They run only in the
-  classes each provider's test project derives from them, against its real database:
-  PostgreSQL, SQL Server and MySQL, in CI as service containers and locally in containers.
-  It includes the concurrency cases:
+- **The conformance suite is written once**, against the provider contract, and run by
+  each provider's test project against its real database: PostgreSQL, SQL Server and
+  MySQL, in CI as service containers and locally in containers. It includes the
+  concurrency cases:
   - many workers claiming at once;
   - a worker that dies holding an item;
   - a holder that writes after its lease was reclaimed;
@@ -277,8 +277,9 @@ Writing code:
 - **A test project is organized like a library:** a folder is a namespace and one area of
   behavior. Code that two or more test projects need lives once, in a
   `Moltaro.Work.TestSupport` project, created when the second test project needs it; it is
-  never shipped and runs no tests of its own: the conformance suite in it runs only in the
-  provider test projects.
+  never shipped and runs no tests of its own. The conformance suite is a set of abstract
+  test classes in its folder `Conformance`, which run only in the classes each provider's
+  test project derives from them.
 - **A feature that is not implemented has its tests written and marked
   `[Fact(Skip = ...)]`** with one shared reason. Skipping is never used for a flaky test.
 - **The contract and the tests come before the implementation.** On the full track of the

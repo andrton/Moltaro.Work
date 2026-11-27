@@ -22,6 +22,11 @@ namespace Moltaro.Work;
 /// names.
 /// </para>
 /// <para>
+/// A token that is already cancelled when a method is called gives a cancelled task, and nothing is written. A
+/// cancellation that comes later ends the task cancelled, with one exception: <see cref="RequeueAsync"/> completes
+/// with its result once its transaction committed, so that the caller can set the queue's signal.
+/// </para>
+/// <para>
 /// A fenced write, <see cref="CompleteAsync"/>, <see cref="RetryAsync"/>, <see cref="GiveUpAsync"/>,
 /// <see cref="ReleaseAsync"/> and the renewals of <see cref="HeartbeatAsync"/>, succeeds only while the claim's fence
 /// is the item's current one and the item is held. Otherwise it writes nothing and reports the refusal: a holder whose
@@ -37,7 +42,7 @@ public interface IWorkStore
     /// Checks that the database is one the provider can work with: the schema version it needs, and each setting of
     /// the database it names.
     /// </summary>
-    /// <param name="cancellationToken">Ends the wait for the database.</param>
+    /// <param name="cancellationToken">Ends the wait for the database, as the remarks of <see cref="IWorkStore"/> say.</param>
     /// <returns>A task that completes when the database fits.</returns>
     /// <exception cref="InvalidOperationException">
     /// Reported by the task: the schema version found is not the one needed, both named in the message, or a setting
@@ -59,7 +64,7 @@ public interface IWorkStore
     /// The earliest time the item may be claimed; <see langword="null"/>, or an instant the database's clock has
     /// passed, means its now. It is stored in UTC to the microsecond, truncated.
     /// </param>
-    /// <param name="cancellationToken">Ends the wait for the database.</param>
+    /// <param name="cancellationToken">Ends the wait for the database, as the remarks of <see cref="IWorkStore"/> say.</param>
     /// <returns>
     /// <see cref="WorkEnqueueStatusEnum.Added"/> with the id of the item that became waiting: a new item, or a dead
     /// coalescing item revived. <see cref="WorkEnqueueStatusEnum.Coalesced"/> with the id of the waiting or held item
@@ -67,11 +72,11 @@ public interface IWorkStore
     /// </returns>
     /// <remarks>
     /// <para>
-    /// With no active item of that key, it adds a waiting item due at the later of <paramref name="dueAt"/> and the
-    /// database's now. For a coalescing item of that key: while it waits, its due time becomes the earlier of the two,
-    /// unless it waits for a retry; while it is held, its mark to run again takes the earlier of the two; while it is
-    /// dead, it is waiting again with that due time and its attempts at zero. For a log or run item whose key an
-    /// active item has, it writes nothing.
+    /// Without a key, or when no item of the queue holds the key, it adds a waiting item due at the later of
+    /// <paramref name="dueAt"/> and the database's now. For a coalescing item of that key: while it waits, its due
+    /// time becomes the earlier of the two, unless it waits for a retry; while it is held, its mark to run again takes
+    /// the earlier of the two; while it is dead, it is waiting again with that due time and its attempts at zero. For
+    /// a log or run item whose key an active item has, it writes nothing.
     /// </para>
     /// <para>
     /// It neither catches nor retries a database error: the driver's <see cref="DbException"/> reaches the caller
@@ -97,7 +102,7 @@ public interface IWorkStore
     /// <param name="queue">The queue whose items are claimed.</param>
     /// <param name="count">The most items to claim; at least 1.</param>
     /// <param name="lease">The lease of each claim, counted from the database's now.</param>
-    /// <param name="cancellationToken">Ends the wait for the database.</param>
+    /// <param name="cancellationToken">Ends the wait for the database, as the remarks of <see cref="IWorkStore"/> say.</param>
     /// <returns>The claims; empty when nothing was claimable.</returns>
     /// <remarks>
     /// An item is claimable when it waits and its due time is reached, or when it is held and its lease has ended.
@@ -113,7 +118,7 @@ public interface IWorkStore
     /// </summary>
     /// <param name="claims">The claims whose leases are renewed.</param>
     /// <param name="lease">The new lease, counted from the database's now.</param>
-    /// <param name="cancellationToken">Ends the wait for the database.</param>
+    /// <param name="cancellationToken">Ends the wait for the database, as the remarks of <see cref="IWorkStore"/> say.</param>
     /// <returns>
     /// The claims it refused, whose fence is no longer the item's current one; their items are not changed. Empty when
     /// every lease was renewed.
@@ -124,7 +129,7 @@ public interface IWorkStore
     /// Completes a claimed item after its handler succeeded.
     /// </summary>
     /// <param name="claim">The claim of the item.</param>
-    /// <param name="cancellationToken">Ends the wait for the database.</param>
+    /// <param name="cancellationToken">Ends the wait for the database, as the remarks of <see cref="IWorkStore"/> say.</param>
     /// <returns>
     /// <see langword="true"/> when the item was completed; <see langword="false"/> when the claim's fence is not the
     /// item's current one, and nothing was written.
@@ -142,7 +147,7 @@ public interface IWorkStore
     /// <param name="claim">The claim of the item.</param>
     /// <param name="delay">The delay, counted from the database's now.</param>
     /// <param name="reason">The reason kept with the item; at most 4000 characters.</param>
-    /// <param name="cancellationToken">Ends the wait for the database.</param>
+    /// <param name="cancellationToken">Ends the wait for the database, as the remarks of <see cref="IWorkStore"/> say.</param>
     /// <returns>
     /// <see langword="true"/> when the item is waiting again; <see langword="false"/> when the claim's fence is not
     /// the item's current one, and nothing was written.
@@ -158,7 +163,7 @@ public interface IWorkStore
     /// </summary>
     /// <param name="claim">The claim of the item.</param>
     /// <param name="reason">The reason kept with the item; at most 4000 characters.</param>
-    /// <param name="cancellationToken">Ends the wait for the database.</param>
+    /// <param name="cancellationToken">Ends the wait for the database, as the remarks of <see cref="IWorkStore"/> say.</param>
     /// <returns>
     /// <see langword="true"/> when the item was given up; <see langword="false"/> when the claim's fence is not the
     /// item's current one, and nothing was written.
@@ -174,7 +179,7 @@ public interface IWorkStore
     /// Releases a claimed item when its worker stops: it is waiting again at once, and the attempt is given back.
     /// </summary>
     /// <param name="claim">The claim of the item.</param>
-    /// <param name="cancellationToken">Ends the wait for the database.</param>
+    /// <param name="cancellationToken">Ends the wait for the database, as the remarks of <see cref="IWorkStore"/> say.</param>
     /// <returns>
     /// <see langword="true"/> when the item was released; <see langword="false"/> when the claim's fence is not the
     /// item's current one, and nothing was written.
@@ -190,7 +195,7 @@ public interface IWorkStore
     /// </summary>
     /// <param name="queue">The queue of the item.</param>
     /// <param name="itemId">The id of the dead item.</param>
-    /// <param name="cancellationToken">Ends the wait for the database.</param>
+    /// <param name="cancellationToken">Ends the wait for the database, as the remarks of <see cref="IWorkStore"/> say.</param>
     /// <returns>
     /// <see cref="WorkRequeueStatusEnum.Requeued"/> when the item was dead and is waiting again;
     /// <see cref="WorkRequeueStatusEnum.NotDead"/> when the queue has no dead item with that id;
@@ -208,7 +213,7 @@ public interface IWorkStore
     /// next.
     /// </summary>
     /// <param name="queue">The queue.</param>
-    /// <param name="cancellationToken">Ends the wait for the database.</param>
+    /// <param name="cancellationToken">Ends the wait for the database, as the remarks of <see cref="IWorkStore"/> say.</param>
     /// <returns>The durations, as <see cref="WorkNextDue"/> describes them.</returns>
     Task<WorkNextDue> GetNextDueAsync(WorkQueue queue, CancellationToken cancellationToken);
 
@@ -217,7 +222,7 @@ public interface IWorkStore
     /// </summary>
     /// <param name="queue">The queue whose expired items are deleted.</param>
     /// <param name="count">The most items to delete; at least 1.</param>
-    /// <param name="cancellationToken">Ends the wait for the database.</param>
+    /// <param name="cancellationToken">Ends the wait for the database, as the remarks of <see cref="IWorkStore"/> say.</param>
     /// <returns>The number of items deleted.</returns>
     /// <remarks>
     /// An item is expired when it is finished or dead and ended longer ago than the queue's retention, by the

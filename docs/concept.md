@@ -1,7 +1,7 @@
 # Moltaro.Work — concept
 
-Status: agreed concept, 26 November 2026. Nothing is implemented yet;
-[README.md](../README.md) says what works today.
+Status: agreed concept, 26 November 2026, with the owner's answers of 27 November 2026 to the
+questions of the Epic 1 plan. [README.md](../README.md) says what works today.
 
 ## 1. Where it comes from
 

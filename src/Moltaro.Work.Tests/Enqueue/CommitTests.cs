@@ -1,4 +1,5 @@
 using Moltaro.Signals;
+using Moltaro.Work.Tests.Doubles;
 
 namespace Moltaro.Work.Tests.Enqueue;
 

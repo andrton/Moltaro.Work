@@ -65,9 +65,9 @@ public sealed class WorkItem
     public string? Payload { get; }
 
     /// <summary>
-    /// The number of this attempt: 1 for the first claim. It counts every claim since the attempts were last counted
-    /// from zero, as <see cref="WorkShapeEnum"/> and <see cref="WorkClient.RequeueAsync"/> say when, a claim whose
-    /// lease was lost included, but not one that a release gave back when a worker stopped.
+    /// The number of this attempt, 1 for the first. Every claim counts, also one whose lease was lost, except a claim
+    /// that a worker gave back by a release when it stopped. The count starts again from zero when the item is
+    /// revived, requeued, or made waiting again by an enqueue while it was held.
     /// </summary>
     public int Attempt { get; }
 }

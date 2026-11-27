@@ -49,8 +49,8 @@ public enum WorkShapeEnum
     /// One item per enqueue: an event that has to be handled, with a payload that the application serializes.
     /// </summary>
     /// <remarks>
-    /// Every enqueue adds an item, whether another one waits or is held. A key is optional and makes the enqueue
-    /// idempotent: it is unique among the queue's active items, those waiting or held, and an enqueue whose key an
+    /// An enqueue without a key adds an item, whether another one waits or is held. A key is optional and makes the
+    /// enqueue idempotent: it is unique among the queue's active items, those waiting or held, and an enqueue whose key an
     /// active item has adds nothing and reports <see cref="WorkEnqueueStatusEnum.Coalesced"/> with that item's id. A
     /// dead item no longer holds its key. After success the item is deleted; an application that wants the history
     /// declares a <see cref="Run"/> queue.
@@ -61,8 +61,8 @@ public enum WorkShapeEnum
     /// One item per enqueue, kept with its outcome so that an application can show its history.
     /// </summary>
     /// <remarks>
-    /// Every enqueue adds an item, with a payload that the application serializes. A key is optional and makes the
-    /// enqueue idempotent: it is unique among the queue's active items, those waiting or held, and an enqueue whose key
+    /// An enqueue without a key adds an item, with a payload that the application serializes. A key is optional and
+    /// makes the enqueue idempotent: it is unique among the queue's active items, those waiting or held, and an enqueue whose key
     /// an active item has adds nothing and reports <see cref="WorkEnqueueStatusEnum.Coalesced"/> with that item's id.
     /// After success the item is kept as finished, with its attempts, its times and its last reason, for the queue's
     /// <see cref="WorkQueue.Retention"/>. A finished or dead item no longer holds its key.

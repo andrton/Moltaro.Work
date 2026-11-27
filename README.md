@@ -8,10 +8,11 @@ dead letters, clean up by retention, wake at once with
 ## Status
 
 Contract stage. The [concept](docs/concept.md) is agreed. The core package `Moltaro.Work`
-exists as its public contract, documented: it checks its arguments and options, and every
-other entry point throws `NotSupportedException`. Nothing below works today. The first
-epic, the library up to its first release, is planned in [current work](docs/work/README.md);
-its first stage is the public .NET contract.
+exists as its public contract, documented: its types check their arguments and options,
+`WorkClient.Join` and `WorkTransaction.EnqueueAsync` hand a checked enqueue to the provider,
+and every other entry point throws `NotSupportedException`. Nothing below works today. The
+first epic, the library up to its first release, is planned in
+[current work](docs/work/README.md); its first stage is the public .NET contract.
 
 ## What it is, and what it is not
 

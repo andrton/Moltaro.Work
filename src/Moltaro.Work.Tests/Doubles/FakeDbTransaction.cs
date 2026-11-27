@@ -1,10 +1,11 @@
 using System.Data;
 using System.Data.Common;
 
-namespace Moltaro.Work.Tests.Enqueue;
+namespace Moltaro.Work.Tests.Doubles;
 
-// A transaction that touches no database. As an ADO.NET transaction does, it loses its connection when it ends, by a
-// commit or a rollback; that is how the core sees that a transaction has ended.
+// The caller's transaction in every area of these tests, which touches no database. As an ADO.NET transaction does,
+// it loses its connection when it ends, by a commit or a rollback; that is how the core sees that a transaction has
+// ended.
 internal sealed class FakeDbTransaction : DbTransaction
 {
     private DbConnection? _connection;

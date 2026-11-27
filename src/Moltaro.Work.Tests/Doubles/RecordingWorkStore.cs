@@ -1,9 +1,9 @@
 using System.Data.Common;
 
-namespace Moltaro.Work.Tests.Enqueue;
+namespace Moltaro.Work.Tests.Doubles;
 
-// A store that records its enqueues and answers each with EnqueueResult; every other operation throws, because the
-// checks of the contract reach no other one.
+// The provider of every area of these tests: it records its enqueues and answers each with EnqueueResult. Every other
+// operation throws, because no behavior that reaches one is implemented yet.
 internal sealed class RecordingWorkStore : IWorkStore
 {
     public List<EnqueueCall> EnqueueCalls { get; } = [];
@@ -85,6 +85,6 @@ internal sealed class RecordingWorkStore : IWorkStore
 
     private static InvalidOperationException NotExpected()
     {
-        return new InvalidOperationException("The checks of the contract call no other operation of the store.");
+        return new InvalidOperationException("No test reaches this operation of the store.");
     }
 }

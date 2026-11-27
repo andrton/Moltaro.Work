@@ -1,5 +1,5 @@
 using Moltaro.Signals;
-using Moltaro.Work.Tests.Enqueue;
+using Moltaro.Work.Tests.Doubles;
 
 namespace Moltaro.Work.Tests.Workers;
 
