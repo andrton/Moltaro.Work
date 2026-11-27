@@ -30,7 +30,19 @@ An entry is a table:
 
 ## In force
 
-None.
+### X2. A suppressed warning on `WorkWorker.Failed` until S7
+
+`X1` is taken by the connection strings of CI, which S2 records.
+
+| | |
+| --- | --- |
+| **Rule** | "C# on .NET 10, nullable enabled, warnings are errors." |
+| **Departure** | `#pragma warning disable CS0067` and its `restore` around the event `Failed` in `src/Moltaro.Work/WorkWorker.cs` |
+| **Why** | The event is part of the contract of S1, but nothing raises it before S7 implements `RunAsync`. Until then the compiler reports CS0067, "the event is never used", and the build fails |
+| **Kept small by** | One warning, on one member, with a comment that names S7 |
+| **Approved** | By the owner, 27 November 2026 |
+| **Since** | Epic 1, S1 |
+| **Until** | Epic 1, S7, which raises `Failed` and removes the pragma |
 
 ## Approved, not in force yet
 
