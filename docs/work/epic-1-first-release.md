@@ -136,9 +136,8 @@ The epic is done when all of the following hold.
 
 ### Changes of the contract
 
-Until the first release the contract is a draft ([process](process.md#the-plan)): a sprint
-that changes it makes the change in its branch and lists it here for the owner, with the
-sprint and the reason. None yet.
+A sprint that changes the draft contract ([process](process.md#the-plan)) lists the change
+here for the owner, with the sprint and the reason. None yet.
 
 ## Open questions
 
@@ -191,10 +190,9 @@ clock.
   the conformance suite checks each provider against it.
 
 **Recommended: (a)**: under (b) every predicate exists twice, once in C# that production
-never calls. The sentence of
-§9 and of `AGENTS.md` would read "a deterministic test, of the pure component where .NET
-decides and of the conformance suite where SQL decides"; S1 makes the edit as the owner
-words it.
+never calls. The sentence of §9 and of `AGENTS.md` would read "a deterministic test, of the
+pure component where .NET decides and of the conformance suite where SQL decides, and rule
+12 by the review of the SQL"; S1 makes the edit as the owner words it.
 
 ### PQ4. Reading runs and dead items
 
@@ -255,12 +253,12 @@ The table of shapes moves the due time of a waiting item to the earlier of the t
 makes a failed item due "after a backoff". They disagree for an item that waits for a retry.
 - **(a)** The table wins: every enqueue can end a backoff, so during an outage a hot key uses
   up its attempts in seconds.
-- **(b)** Rule 7 wins: an enqueue moves the due time only of an item that has not failed
-  since it was added, revived or requeued; one that waits for a retry keeps its due time,
-  and the enqueue reports `Coalesced`.
+- **(b)** Rule 7 wins: an enqueue moves the due time only of an item waiting with attempts
+  at zero; one that waits for a retry keeps its due time, and the enqueue reports
+  `Coalesced`.
 
 **Recommended: (b)**: the backoff protects what fails, and nothing is lost, because the
-retry reads the current state. Briefs: S2 (`docs/storage.md`), S5, S6.
+retry reads the current state. Briefs: S1, S2 (`docs/storage.md`), S5, S6.
 
 ## Where the concept is silent
 
@@ -311,7 +309,8 @@ owner with this plan. Briefs point to these entries; the contract of Stage 1 car
   unique violation.
 - **W9. Stop.** When the worker stops, it cancels the token of every running handler and
   waits for it. An attempt that ends after the stop began, with anything but `Completed`,
-  is released as PQ7 says. After the stop each outcome is written once; a write that fails
+  is released as PQ7 says, so a failure during a stop keeps neither its reason nor its
+  backoff. After the stop each outcome is written once; a write that fails
   leaves its item to its lease (rule 6).
 - **W10. Errors of an enqueue.** The upsert runs in the caller's transaction at the caller's
   isolation. A provider neither catches nor retries a database error there: the driver's
@@ -335,10 +334,11 @@ owner with this plan. Briefs point to these entries; the contract of Stage 1 car
   because SQL Server ignores trailing spaces when it compares.
 - **W16. Handing on.** A set wakes one member of a group (W11), so a worker that knows of
   claimable work it does not take sets the queue's key itself: after a claim that filled its
-  free lanes, when a due time it knows is reached while no lane is free, and after a write
-  of its own that makes an item waiting at once — a completion that applies a mark, a
-  release, the end of a hold in a scoped queue. After a write that makes an item waiting
-  later, its next deadline is at most that delay. A worker woken for nothing costs one claim.
+  free lanes, when a due time it knows is reached while no lane is free, once for that time,
+  and after a write of its own that makes an item waiting at once — a completion that
+  applies a mark, a release, the end of a hold in a scoped queue. After a write that makes
+  an item waiting later, its next deadline is at most that delay. A worker woken for nothing
+  costs one claim.
 
 ### Rules and their tests
 
@@ -364,20 +364,16 @@ tested in `Moltaro.Work.Tests`; "conformance" is the suite on each real database
 
 ### Rules for every sprint
 
-- **The process.** The [development process](process.md) applies. A sprint on the full
-  track is three commits by one implementer — contract, tests, implementation — then the
-  fixes; a sprint of Stage 1 implements only the checks of its contract, which are written
-  in its contract commit, so its third commit is empty and is not made.
+- **The process.** The [development process](process.md) applies; a sprint of Stage 1 has
+  no implementation commit, because its checks are written with its contract.
 - **Branches.** As [branches and releases](branches.md) says: `epic-1/sprint-<nn>-<name>`
   on the full and the refactoring track, `docs/` or `chore/` on the light one.
 - **Models and effort.** Every agent is Opus 5.5 (`claude-opus-5-5`), at the effort of
   [Models and effort](process.md#models-and-effort); each brief names its implementer's.
-- **The architect's review** follows every merged sprint, as the first task of the next
-  sprint's coordinator; after the last sprint of a stage it reads the whole code base. A
-  refactoring sprint, named after its sprint (S7R after S7), exists only when the
-  architect's list has an entry that was taken; it is on the refactoring track, with a
-  refactorer at `high`, and its brief says to the refactorer that KISS holds there as
-  everywhere.
+- **The architect's review** follows every merged sprint, as the next coordinator's first
+  task, and reads the whole code base after a stage's last sprint. A refactoring sprint
+  (S7R after S7) exists only when an entry of its list was taken; it has a refactorer at
+  `high`, and its brief says that KISS holds there as everywhere.
 - **Stages and their contracts.** The contract of Stage 1 is written out below and is
   approved with this plan. For a later stage the briefs say what the sprint must achieve and
   the cases that prove it, not how its SQL or its loop is built; before the stage begins,
@@ -385,8 +381,8 @@ tested in `Moltaro.Work.Tests`; "conformance" is the suite on each real database
   types and any public change into its briefs, an independent reviewer reviews them, and the
   owner approves the public part. The coordinator approves internal contracts.
 - **To read, for every sprint:** `AGENTS.md`, the [concept](../concept.md), the
-  [development process](process.md) and [branches and releases](branches.md), at their
-  state of 26 November 2026; this plan as the owner approved it, with
+  [development process](process.md) and [branches and releases](branches.md), as they
+  stand on `main` when the sprint starts; this plan as the owner approved it, with
   [The study](#the-study), [Where the concept is silent](#where-the-concept-is-silent) and
   the owner's answers to its questions; `docs/storage.md` as the last sprint left it. A
   brief names what it needs beyond these.
@@ -459,8 +455,7 @@ two more databases against a finished conformance suite.
 | S17 | The explanations | Light | Not started |
 | S18 | The release of 0.1.0 | Light | Not started |
 
-A sprint of Stages 2–5 starts only once its stage's contract is approved. An architect's
-review follows each sprint once it is merged.
+A sprint of Stages 2–5 starts only once its stage's contract is approved.
 
 ## Stage 1: the public contract
 
@@ -489,8 +484,10 @@ words or by pointing to the type that states them.
   `OperationCanceledException` — is reported by the returned task.
 - **Cancellation.** A token that is already cancelled, once the argument checks passed,
   gives a cancelled task before anything else, `NotSupportedException` included, and
-  nothing is written. A task whose token is cancelled later ends cancelled, except
-  `WorkWorker.RunAsync`, for which the token is the stop: its task then completes.
+  nothing is written. A task whose token is cancelled later ends cancelled, except once its
+  work is done: the task of `WorkWorker.RunAsync`, whose token is its stop, and those of
+  `CommitAsync` and `RequeueAsync` once their transaction committed, whose sets of the
+  signal do not take the caller's token, complete.
 - **Results.** Expected outcomes are results, not exceptions. The value 0 of a result enum
   is never returned, so a `default` result claims nothing.
 - **Options** are plain classes with settable properties and defaults. The constructor
@@ -663,7 +660,8 @@ words or by pointing to the type that states them.
     S9; documents W8 and each status.
   - `WorkTransaction.EnqueueAsync`: checks in this order, each before the store is called:
     `queue` `null` → `ArgumentNullException`; after `CommitAsync` was called, or after an
-    enqueue of this transaction failed, or when `transaction.Connection` is `null` because
+    enqueue of this transaction whose task faulted or was cancelled once the store was
+    called, or when `transaction.Connection` is `null` because
     the transaction ended → `InvalidOperationException`; for a coalescing queue `key` `null`
     → `ArgumentException` (`key`) and a `payload` → `ArgumentException` (`payload`); a `key`
     or `scope` that breaks the rule → `ArgumentException`; a `scope` on a queue that is not
@@ -676,7 +674,7 @@ words or by pointing to the type that states them.
     that statement alone, so the transaction takes no more enqueues and no `CommitAsync`,
     which would keep the write without its item.
   - `WorkTransaction.CommitAsync`: a second call, the first counting whatever its outcome,
-    or a call after a failed enqueue → `InvalidOperationException`; then
+    or a call after such a failed enqueue → `InvalidOperationException`; then
     `NotSupportedException` until S5. Documents: it commits the transaction; only after the
     commit succeeded it sets the signal of every queue enqueued into, once each (rule 2,
     W11); an exception of the commit propagates and nothing is set; once committed it
@@ -697,7 +695,7 @@ words or by pointing to the type that states them.
   - `WorkItem(...)`: `queue` `null` → `ArgumentNullException`; `id` or `attempt` below 1 →
     `ArgumentOutOfRangeException`; nothing else is checked, because a provider creates it
     from a row. `Attempt` is 1 for the first claim and counts every claim, a lost lease
-    included (rule 6).
+    included (rule 6), but not one a release gave back (PQ7).
   - `WorkWorkerOptions`: each property documents its default and its range; `Lanes` is the
     number of handlers that run at once and the size of every claim (W14); `LeaseDuration`
     the lease each claim and heartbeat sets; `HeartbeatInterval` above half of
@@ -870,9 +868,9 @@ words or by pointing to the type that states them.
   - `due_at` is when a waiting item may be claimed; `lease_until` when a held item's lease
     ends; `again_due_at` the mark "run again" of W3; `fence` grows by one with every claim
     and is never reset (W1); `attempts` counts claims since the item was added, revived or
-    requeued; `enqueued_at`, `claimed_at` (the last claim) and `finished_at` (finished or
-    dead) are the times of a run's history; `reason` the last failure, at most 4000
-    characters.
+    requeued, less those a release gave back; `enqueued_at`, `claimed_at` (the last claim)
+    and `finished_at` (finished or dead) are the times of a run's history; `reason` the last
+    failure, at most 4000 characters.
   - A row of `moltaro_work_scope` exists exactly while an item of that scope is held, and
     names it; its primary key is the scope rule without advisory locks (D9, S11).
   - The schema's version is the one row of `moltaro_work_schema`; a later version comes
@@ -895,7 +893,7 @@ words or by pointing to the type that states them.
   | Complete | Held, with the claim's fence | Coalescing: deleted, or waiting at `again_due_at` with `attempts` 0; log: deleted; run: finished |
   | Retry | Held, with the claim's fence | Waiting at now plus the delay, with the reason |
   | Give up | Held, with the claim's fence | Dead with the reason; a coalescing item with a mark as PQ1 says |
-  | Release | Held, with the claim's fence | Waiting at now, with the attempts it had before the claim (PQ7) |
+  | Release | Held, with the claim's fence | Waiting at now, with the attempts it had before the claim (PQ7); a mark stays, as with a retry |
   | Requeue | Dead | Waiting at now, `attempts` 0 (W8) |
   | Delete expired | Finished or dead, `finished_at` older than the retention | Deleted, at most the batch, oldest first |
 
@@ -1103,8 +1101,8 @@ Opus 5.5, `xhigh` · **Needs:** S2.
 - **Projects.** `Moltaro.Work.Hosting`: packed, as the others; references `Moltaro.Work` and
   `Microsoft.Extensions.Hosting.Abstractions`. `Moltaro.Work.Hosting.Tests`: not packed;
   references it, TestSupport, `Microsoft.Extensions.Hosting` and
-  `Moltaro.Signals.Hosting`. The samples gain references to the hosting package, the
-  PostgreSQL provider, `Moltaro.Signals.Hosting` and `Microsoft.Extensions.Hosting`. The
+  `Moltaro.Signals.Hosting`. The samples gain references to the hosting package,
+  `Moltaro.Signals.Hosting` and `Microsoft.Extensions.Hosting`. The
   `windows` job also runs `Moltaro.Work.Hosting.Tests`.
 - **Contract, namespace `Moltaro.Work.Hosting`.**
 
@@ -1159,8 +1157,7 @@ Opus 5.5, `xhigh` · **Needs:** S2.
 
 ## Stage 2: the thinnest path on PostgreSQL
 
-Its contract is written before S5, as the rules for every sprint say; the public contract
-of Stage 1 is expected to carry it unchanged.
+Its contract is written before S5; the public contract of Stage 1 should carry it.
 
 ### S5 · Coalescing enqueue and the commit that wakes, on PostgreSQL
 
@@ -1173,10 +1170,10 @@ of Stage 1 is expected to carry it unchanged.
   `docs/storage.md`, W3 and W10 say; `WorkTransaction.CommitAsync`.
 - **Acceptance.** Conformance, area `Enqueue`: a second enqueue of a committed key reports
   `Coalesced` with the first's id, and after a rollback `Added`; two transactions that
-  enqueue one key at once at READ COMMITTED leave one item; at REPEATABLE READ the second
-  fails as W10 says. The queue's member is signalled after `CommitAsync`, not after a
-  rollback, a failed commit or a failed enqueue. The sample `EnqueueInTransaction` runs to
-  the end.
+  enqueue one key at once leave one item: at REPEATABLE READ the second either fails with
+  the error its provider documents (W10) or waits and reports `Coalesced`. The queue's
+  member is signalled after `CommitAsync`, not after a rollback, a failed commit or a failed
+  enqueue. The sample `EnqueueInTransaction` runs to the end.
 - **Out of scope.** Claims, logs, runs, scopes.
 
 ### S6 · Claim, lease, heartbeat and fenced completion
@@ -1222,17 +1219,18 @@ of Stage 1 is expected to carry it unchanged.
 - **Acceptance.** Policy tests of the wait and of lease loss at their edges. Conformance,
   area `Worker`, with an in-process `SignalHost` and one `FakeTimeProvider` for host and
   worker: a commit starts the handler without moving a clock; an item due in 30 seconds
-  starts once both clocks moved; an idle worker sends no statement before its idle bound
-  and one then, counted through the driver's tracing; two workers of one lane each share a
-  commit of three items without waiting for an idle bound (W16); a due item locked by an
-  open transaction costs no statement until that transaction ends or the idle bound (W7);
-  with three lanes at most three handlers run at once; a handler that outlives the lease
-  keeps its item; one whose item was claimed again, by another worker or on another lane
-  of its own, has its token cancelled and its completion refused; a stop cancels the
-  handlers and `RunAsync` completes after they ended; a wrong schema version ends
-  `RunAsync` with `InvalidOperationException`; an unreachable database raises `Failed` and
-  the worker goes on after `FailureDelay`; a failing `WaitAsync` ends `RunAsync`. The sample
-  `WorkerWithoutHost` runs to the end.
+  starts once both clocks moved; an idle worker sends no statement before its idle bound and
+  one then, counted through the driver's tracing; two workers of one lane each share a
+  commit of three items without waiting for an idle bound, and a due time reached while one
+  worker's lanes are busy, or a completion that applies a mark, wakes the other (W16); a due
+  item locked by an open transaction costs no statement until that transaction ends or the
+  idle bound (W7); with three lanes at most three handlers run at once; a handler that
+  outlives the lease keeps its item; one whose item was claimed again, by another worker or
+  on another lane of its own, has its token cancelled and its completion refused; a stop
+  cancels the handlers and `RunAsync` completes after they ended; a wrong schema version, or
+  a database not in UTF8, ends `RunAsync` with `InvalidOperationException`; an unreachable
+  database raises `Failed` and the worker goes on after `FailureDelay`; a failing
+  `WaitAsync` ends `RunAsync`. The sample `WorkerWithoutHost` runs to the end.
 - **Out of scope.** Retries, hosting.
 
 ### S8 · The hosting package works
@@ -1266,13 +1264,13 @@ Its contract, with the metrics of S13, is written before S9.
   without overflow.
 - **Acceptance.** Policy tests of each rule at its edges. Conformance, area `Retries`: a
   failing handler's item is due again after the backoff by the database's clock, with the
-  next attempt; after `AttemptLimit` failures it is dead with the exception's text; a lease
-  lost on the last attempt makes it dead at the next claim, and the handler does not run;
-  a stop releases a running item as PQ7 says and wakes another worker (W16); a requeue
-  makes a dead item waiting with attempts from zero, and of another item reports
-  `NotDead`; a new store and worker continue the attempts (rule 8); a retry, give-up or
-  release with a reclaimed fence is refused; a dead coalescing item, and one that ends dead
-  after an enqueue while held, behave as PQ1 says.
+  next attempt, and starts then without a signal (W16); after `AttemptLimit` failures it is
+  dead with the exception's text; a lease lost on the last attempt makes it dead at the next
+  claim, and the handler does not run; a stop releases a running item as PQ7 says and wakes
+  another worker (W16); a requeue makes a dead item waiting with attempts from zero, and of
+  another item reports `NotDead`; a new store and worker continue the attempts (rule 8); a
+  retry, give-up or release with a reclaimed fence is refused; a dead coalescing item, and
+  one that ends dead after an enqueue while held, behave as PQ1 says.
 - **Out of scope.** Logs, runs, scopes, retention.
 
 ### S10 · Logs and runs
@@ -1285,11 +1283,11 @@ Its contract, with the metrics of S13, is written before S9.
 - **Contract.** `EnqueueAsync`, `CompleteAsync`, `GiveUpAsync` and `RequeueAsync` for log
   and run items.
 - **Acceptance.** Conformance, area `Shapes`: a log item's payload reaches its handler; two
-  enqueues without a key are two items; with an active item's key the second is
-  `Coalesced` with its id, and once the first completed a new one is `Added`; a log item is
-  deleted after success; a run is kept finished with its attempts and times; a dead run
-  gives up its key; a requeue of a dead run whose key is active, also one enqueued at that
-  moment, reports `KeyActive`. The sample `LogAndRun` runs to the end; `docs/storage.md`
+  enqueues without a key are two items; with an active item's key the second is `Coalesced`
+  with its id, and once the first completed a new one is `Added`; a log item is deleted
+  after success; a run is kept finished with its attempts and times; a dead run gives up its
+  key; a requeue of a dead run whose key is active, also one enqueued at that moment,
+  reports `KeyActive`. The sample `LogAndRun` runs up to its scoped item; `docs/storage.md`
   says how an application reads its runs (PQ4).
 - **Out of scope.** Scopes, retention.
 
@@ -1303,14 +1301,15 @@ Its contract, with the metrics of S13, is written before S9.
   advisory locks (rule 10, D9).
 - **Contract.** `EnqueueAsync` with a scope, `ClaimAsync` for a scoped queue, and the
   fenced writes that end a hold.
-- **Acceptance.** Conformance, area `Scopes`: two items of one scope are never held at
-  once, also under many concurrent claimers over many scopes, which never fail with a
-  deadlock; a batch takes at most one item per scope, and items of several scopes
-  together; a held scope keeps no item of another scope from being claimed, even when its
-  own waiting items are due earlier; after a completion the next item of the scope starts
+- **Acceptance.** Conformance, area `Scopes`: two items of one scope are never held at once,
+  also under many concurrent claimers over many scopes, which never fail with a deadlock; a
+  batch takes at most one item per scope, and items of several scopes together; a held scope
+  keeps no item of another scope from being claimed, even when more of its own waiting items
+  than a batch holds are due earlier; after a completion the next item of the scope starts
   without waiting for an idle bound (W16); when a held item's lease ends, that item and no
   other of its scope is claimed; an item waiting behind a held scope costs no statement;
-  items without a scope are not serialized; no scope row remains once nothing is held.
+  items without a scope are not serialized; no scope row remains once nothing is held. The
+  sample `LogAndRun` runs to the end.
 - **Out of scope.** Any order beyond the due time.
 
 ### S12 · Retention
@@ -1325,7 +1324,8 @@ Its contract, with the metrics of S13, is written before S9.
 - **Acceptance.** Conformance, area `Retention`: a dead item and a finished run are deleted
   after their retention by the database's clock, and not before; a delete removes at most
   its batch, oldest first; a waiting or held item is never deleted, and a delete neither
-  waits for nor removes an item that a requeue or a reviving enqueue holds locked; a worker
+  waits for nor removes an item that a requeue or a reviving enqueue holds locked, which
+  costs no statement until that transaction ends or the idle bound (W7); a worker
   deletes expired items at their expiry without a signal. Policy: the wait with an expiry
   before the next due time.
 - **Out of scope.** A retention per state.
@@ -1349,8 +1349,7 @@ Its contract, with the metrics of S13, is written before S9.
 
 ## Stage 4: the other providers
 
-Its contract is written before S14, from what Stages 2 and 3 taught. The conformance suite
-does not change for a provider.
+Its contract is written before S14; the conformance suite does not change for a provider.
 
 ### S14 · The SQL Server provider
 
@@ -1372,8 +1371,8 @@ does not change for a provider.
 
 - **Goal.** `MySqlWorkStore` implements every operation with the SQL of MySQL, and the whole
   conformance suite passes on MySQL 8.4 in CI.
-- **Contract.** Every member of `MySqlWorkStore`, with the facts of S3's brief: no
-  `RETURNING`, no partial index, next-key locks at REPEATABLE READ.
+- **Contract.** Every member of `MySqlWorkStore`, for a database with no `RETURNING`, no
+  partial index and next-key locks at REPEATABLE READ.
 - **Acceptance.** As S14; besides, `Added` and `Coalesced` are told apart whatever the
   caller's connection options are, MySqlConnector's `UseAffectedRows` included.
 - **Out of scope.** MariaDB.
@@ -1392,7 +1391,8 @@ The planner completes these briefs from what the epic taught; they have no publi
 - **Measured.** Statements per item for claim and completion in a batch, through the
   drivers' tracing; from a due time, and from a commit, to the start of the handler
   (targets: one second, one wake-up); statements of an idle queue (target: one per idle
-  bound). Each figure names the processor, the system and the versions, never a host; the
+  bound); an item whose holder died starts within an idle bound, not a second (W7). Each
+  figure names the processor, the system and the versions, never a host; the
   coordinator records them in `README.md`.
 - **Out of scope.** Gating tests on figures.
 
