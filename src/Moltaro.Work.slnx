@@ -1,8 +1,12 @@
 <Solution>
   <Project Path="Moltaro.Work/Moltaro.Work.csproj" />
+  <Project Path="Moltaro.Work.MySql/Moltaro.Work.MySql.csproj" />
+  <Project Path="Moltaro.Work.MySql.Tests/Moltaro.Work.MySql.Tests.csproj" />
   <Project Path="Moltaro.Work.PostgreSql/Moltaro.Work.PostgreSql.csproj" />
   <Project Path="Moltaro.Work.PostgreSql.Tests/Moltaro.Work.PostgreSql.Tests.csproj" />
   <Project Path="Moltaro.Work.Samples/Moltaro.Work.Samples.csproj" />
+  <Project Path="Moltaro.Work.SqlServer/Moltaro.Work.SqlServer.csproj" />
+  <Project Path="Moltaro.Work.SqlServer.Tests/Moltaro.Work.SqlServer.Tests.csproj" />
   <Project Path="Moltaro.Work.TestSupport/Moltaro.Work.TestSupport.csproj" />
   <Project Path="Moltaro.Work.Tests/Moltaro.Work.Tests.csproj" />
 </Solution>

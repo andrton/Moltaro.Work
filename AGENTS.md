@@ -17,16 +17,9 @@ An application enqueues an item in its own transaction and writes the item's han
 the library does the rest. Workers wake through Moltaro.Signals and at the earliest due
 time, never on a fixed polling interval.
 
-What exists today is the **concept** and the **public contract of the core**, the package
-`Moltaro.Work`, documented: its types check their arguments and options, `WorkClient.Join`
-and `WorkTransaction.EnqueueAsync` hand a checked enqueue to the provider, and every other
-entry point throws `NotSupportedException`. The **PostgreSQL provider**
-`Moltaro.Work.PostgreSql` exists as its contract and its schema script of version 1: its
-store checks its data source, and each of its operations throws `NotSupportedException`.
-Nothing else is implemented yet. The
-[concept](docs/concept.md) is the authority for what the library guarantees: its shapes,
-its rules, its decisions D1–D16 and its non-goals. `README.md` says what works today; a
-feature is delivered when the README says so.
+The [concept](docs/concept.md) is the authority for what the library guarantees: its
+shapes, its rules, its decisions D1–D16 and its non-goals. "Status" of `README.md` alone says
+what exists and what works today; a feature is delivered when the README says so.
 
 This repository is public. Nothing specific to a private product goes into it: no names
 of its modules, tables or customers, in code, tests, samples or documents.
@@ -54,6 +47,7 @@ first epic fixes. The packages planned by the concept:
 | `Moltaro.Work.Hosting` | Registration in a .NET generic host and a container; a thin package |
 | `Moltaro.Work.Samples` | Runnable samples of intended use |
 | `src/*.Tests` | Tests, one project per library; the provider conformance suite is shared by the provider test projects |
+| `Moltaro.Work.TestSupport` | Code that two or more test projects need, the conformance suite among it. Never shipped, and runs no tests of its own |
 | `Moltaro.Work.Measurements` | The program that measures the performance targets of the concept. Started by hand; never shipped and not a test project |
 
 The repository root holds only repository-level files. Code never lives there.

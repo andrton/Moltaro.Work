@@ -4,7 +4,9 @@
   </PropertyGroup>
   <!-- Every package version of the repository is declared here, added by the sprint that first needs it. -->
   <ItemGroup>
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="8.0.0" />
     <PackageVersion Include="Moltaro.Signals" Version="0.1.0" />
+    <PackageVersion Include="MySqlConnector" Version="3.0.0" />
     <PackageVersion Include="Npgsql" Version="11.0.0" />
     <PackageVersion Include="xunit.v3" Version="4.0.3" />
     <PackageVersion Include="xunit.v3.assert" Version="4.0.3" />
