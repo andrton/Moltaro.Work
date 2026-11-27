@@ -1,7 +1,7 @@
 # Epic 1: First release
 
-**Status:** approved by the owner on 27 November 2026, with the contract of Stage 1; S1 in
-progress.
+**Status:** approved by the owner on 27 November 2026, with the contract of Stage 1; S1
+done, S2 next.
 
 ## Standing permission
 
@@ -445,7 +445,7 @@ two more databases against a finished conformance suite.
 
 | Sprint | Result | Track | Status |
 | --- | --- | --- | --- |
-| S1 | The core contract and the test lane | Full | In progress |
+| S1 | The core contract and the test lane | Full | Done, in three review rounds |
 | S2 | The PostgreSQL provider contract and schema | Full | Not started |
 | S3 | The SQL Server and MySQL provider contracts and schemas | Full | Not started |
 | S4 | The hosting contract and the samples | Full | Not started |
