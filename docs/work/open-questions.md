@@ -85,6 +85,15 @@ An entry is numbered `Q1`, `Q2`, … and keeps its number for good:
 | **Until answered** | The documentation of `WorkWorker` names both rules and not the case where they meet. S7, which implements `RunAsync`, does not start before the answer |
 | **Decides** | The planner, with the contract of Stage 2 |
 
+### Q8. Where the worker of `AddWorkWorker` gets its client
+
+| | |
+| --- | --- |
+| **Found** | 27 November 2026, in round 2 of the review of S1R |
+| **Question** | S4's `AddWork` creates the `WorkClient` with the system clock, and an application that gives its `ISignals` another clock creates the client itself. S4's brief does not say where `AddWorkWorker`'s worker gets its `WorkClient`: from the container, so that such an application registers its own client and still uses `AddWorkWorker`, or only from `AddWork`? |
+| **Until answered** | S4's brief says nothing of it. S4 does not start before the answer |
+| **Decides** | The planner, as it follows from the hosting contract, and reports to the owner |
+
 ## Answered
 
 ### Q6. Whose clock a worker uses
