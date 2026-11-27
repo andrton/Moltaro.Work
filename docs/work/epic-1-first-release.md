@@ -147,7 +147,10 @@ here for the owner, with the sprint and the reason.
   TimeProvider? timeProvider = null)`, where `null` means `TimeProvider.System`, gives its
   workers their clock, and `WorkWorkerOptions.TimeProvider` is removed. The owner decided
   it on 27 November 2026 (Q6), so that the clock W6 ties to the `ISignals` is given once,
-  next to it, and two workers of one client cannot differ. S4 makes it.
+  next to it, and two workers of one client cannot differ. `AddWork` passes `null`, the
+  clock that `Moltaro.Signals.Hosting` 0.1.0 also gives its `ISignals` by default; the
+  owner chose it on the same day over the container's `TimeProvider`, which that package
+  does not read. S4 makes it.
 
 ## Open questions
 
@@ -1202,8 +1205,9 @@ Opus 5.5, `xhigh` · **Needs:** S2.
     `NotSupportedException` until S8.
   - `AddWork` documents: it registers the `IWorkStore` that `createStore` makes, once, and
     a `WorkClient` over it and the container's `ISignals`, both singletons; the client's
-    clock is the container's `TimeProvider` when one is registered, `TimeProvider.System`
-    otherwise, and has to be the clock of that `ISignals` (W6); the `ISignals` comes from
+    clock is `TimeProvider.System`, the default clock of `Moltaro.Signals.Hosting` 0.1.0,
+    so that it is the clock of that `ISignals` (W6), and an application that gives its
+    `ISignals` another clock creates the `WorkClient` itself; the `ISignals` comes from
     `AddSignalHost` or `AddSignalClient` of `Moltaro.Signals.Hosting`, and a
     container without one fails when the client is resolved; the application owns and
     disposes what the store uses, such as its data source.
