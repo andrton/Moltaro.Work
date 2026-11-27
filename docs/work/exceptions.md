@@ -30,6 +30,18 @@ An entry is a table:
 
 ## In force
 
+### X1. The connection strings of the CI service containers
+
+| | |
+| --- | --- |
+| **Rule** | "No secrets, tokens, machine paths, connection strings, build output or run output in Git." |
+| **Departure** | `.github/workflows/ci.yml` and `.github/workflows/publish.yml` name the connection strings of their own PostgreSQL, SQL Server and MySQL service containers |
+| **Why** | The tests of each provider need their real database, and the passwords of these containers exist only inside the job; a repository secret would protect nothing |
+| **Kept small by** | Only those two files, only their own service containers, with throwaway passwords; nothing else in the repository names a connection string |
+| **Approved** | By the owner, 27 November 2026, as the answer to PQ5 of the Epic 1 plan |
+| **Since** | Epic 1, S2 |
+| **Until** | Permanent |
+
 ### X2. A suppressed warning on `WorkWorker.Failed` until S7
 
 | | |
@@ -44,17 +56,7 @@ An entry is a table:
 
 ## Approved, not in force yet
 
-### X1. The connection strings of the CI service containers
-
-| | |
-| --- | --- |
-| **Rule** | "No secrets, tokens, machine paths, connection strings, build output or run output in Git." |
-| **Departure** | `.github/workflows/ci.yml` and `.github/workflows/publish.yml` name the connection strings of their own PostgreSQL, SQL Server and MySQL service containers |
-| **Why** | The tests of each provider need their real database, and the passwords of these containers exist only inside the job; a repository secret would protect nothing |
-| **Kept small by** | Only those two files, only their own service containers, with throwaway passwords; nothing else in the repository names a connection string |
-| **Approved** | By the owner, 27 November 2026, as the answer to PQ5 of the Epic 1 plan |
-| **Since** | Not yet; Epic 1, S2 puts it in force |
-| **Until** | Permanent |
+None.
 
 ## Ended
 

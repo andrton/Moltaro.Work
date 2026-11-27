@@ -292,6 +292,10 @@ Writing code:
   coordinator's agreement, and the commit says why.
 - **Samples and README code.** Every sample runs to the end with `dotnet run`. Code shown in
   `README.md` must compile against the current contract.
+- **Samples are read in order.** Each sample of `Moltaro.Work.Samples` has a folder of its own,
+  numbered from `01` so that the folders sort in the order they are read, such as `01-Start`. Its
+  namespace is the folder's name without the number, `Moltaro.Work.Samples.Start`, because a C#
+  name cannot start with a digit. `Program.cs` runs the samples in that order.
 
 From `src`:
 

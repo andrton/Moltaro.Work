@@ -143,6 +143,12 @@ here for the owner, with the sprint and the reason.
   one threw. The owner decided it on 27 November 2026, so that one failing subscriber does
   not keep the others from the report. What follows for `RunAsync` is in S1's brief, under
   `WorkWorker(...)`. S7 implements it.
+- **S2, what the store throws by the call.** `WorkTransaction.EnqueueAsync` no longer catches
+  what `IWorkStore.EnqueueAsync` throws by the call: only an enqueue whose task faulted or was
+  cancelled closes the transaction, as S1's brief says. The provider's `ArgumentException` for a
+  connection of another database, which `EnqueueAsync` now documents, leaves the transaction
+  open, as the core's own argument errors do, because a refusal by the call wrote nothing. From
+  the architect's review after S1, joined to S2 by the planner. S2 makes it.
 - **S4, the clock of `WorkClient`.** `WorkClient(IWorkStore store, ISignals signals,
   TimeProvider? timeProvider = null)`, where `null` means `TimeProvider.System`, gives its
   workers their clock, and `WorkWorkerOptions.TimeProvider` is removed. The owner decided
