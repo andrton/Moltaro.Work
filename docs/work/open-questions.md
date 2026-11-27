@@ -40,7 +40,32 @@ An entry is numbered `Q1`, `Q2`, … and keeps its number for good:
 
 ## Open
 
-None.
+### Q1. May the source of a project under MPL-2.0 be read?
+
+| | |
+| --- | --- |
+| **Found** | 26 November 2026, in the study of Epic 1 |
+| **Question** | The [rule on sources](process.md#code-modelled-on-another-project) names permissive licences (MIT, Apache-2.0, BSD), whose code may be read and modelled on, and GPL or LGPL, whose code is not opened. River is under MPL-2.0, which the rule does not name. May its source be read, in a study or as a model? |
+| **Until answered** | Taken as GPL/LGPL: River was studied from its documentation only, and no code of ours is modelled on its source |
+| **Decides** | The owner |
+
+### Q2. A due item that cannot be taken hides the later due times of its queue
+
+| | |
+| --- | --- |
+| **Found** | 27 November 2026, in round 2 of the review of the Epic 1 plan, a P2 left open when the review reached its limit of rounds |
+| **Question** | W7 of the [plan](epic-1-first-release.md#where-the-concept-is-silent) has a worker whose claim takes nothing, although the database said something was due, wait for the signal or the idle bound. A due item that cannot be taken — behind a held scope, or locked by an open transaction — then keeps `UntilClaimable` at zero, and an item that falls due later, of another scope, starts at the next signal or idle bound instead of at its due time: against D7 and the one-second target of concept §9. The reviewer proposed: the next claimable time leaves out waiting items whose scope is held; W7's wait applies only after a look that returned zero, and a claim at a positive deadline that takes nothing looks again; S11 gets the case "an item of another scope that falls due while a held scope's item waits starts at its due time". Is this fix taken now, with a review of it alone, or when the contract of Stage 2 is written? |
+| **Until answered** | The plan keeps W7 as written. No sprint of Stage 1 implements it; the contract of Stage 2 is not written before the answer |
+| **Decides** | The owner |
+
+### Q3. The statements of handing on the signal
+
+| | |
+| --- | --- |
+| **Found** | 27 November 2026, by both reviewers in round 2 of the review of the Epic 1 plan |
+| **Question** | W16 of the [plan](epic-1-first-release.md#where-the-concept-is-silent) has a worker that filled its free lanes set the queue's key, because a set wakes one member. With one lane, the default, every claim that takes an item fills it, so every item hands on, and some member sends a claim and a look that find nothing: about five statements per item instead of three, and the same at every end of a hold in a scoped queue. This is a statement while nothing is due (principle 5). Is the cost accepted as an exception to principle 5, or does `IWorkStore.ClaimAsync` return, with its claims, whether more claimable work remains, which changes the provider contract of Stage 1? |
+| **Until answered** | The plan keeps W16 as written; no sprint of Stage 1 implements it. The question is answered before the contract of Stage 2 is approved |
+| **Decides** | The owner |
 
 ## Answered
 

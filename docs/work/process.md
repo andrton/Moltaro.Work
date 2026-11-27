@@ -61,6 +61,13 @@ claiming, leases, fencing and the providers.
 | Implementer in the first two zones | `xhigh` |
 | Coordinator, refactorer, study, fixes after review, documents and explanations, light-track author, and implementer in other zones | `high` |
 
+Claude Fable holds no role (the owner, 27 November 2026). Work that seems to need more
+than its role's effort runs on Opus 5.5 at `xhigh`. Fable is started only on the owner's
+explicit word, for a serious study or code of exceptional difficulty; no planner or
+coordinator starts it on its own. When agents on Opus 5.5 have reached an impasse that a
+deeper analysis may resolve, the planner or the coordinator asks the owner, naming the
+question and the obstacle. The owner's word covers that question alone.
+
 #### Codex
 
 Every agent uses GPT-6.2 Sol (`model = "gpt-6.2-sol"`). Set `model_reasoning_effort`
