@@ -1,7 +1,7 @@
 # Epic 1: First release
 
 **Status:** approved by the owner on 27 November 2026, with the contract of Stage 1; S1
-done, S2 next.
+done, S1R next.
 
 ## Standing permission
 
@@ -446,6 +446,7 @@ two more databases against a finished conformance suite.
 | Sprint | Result | Track | Status |
 | --- | --- | --- | --- |
 | S1 | The core contract and the test lane | Full | Done, in three review rounds |
+| S1R | The architect's list after S1 | Refactoring | Not started |
 | S2 | The PostgreSQL provider contract and schema | Full | Not started |
 | S3 | The SQL Server and MySQL provider contracts and schemas | Full | Not started |
 | S4 | The hosting contract and the samples | Full | Not started |
@@ -772,10 +773,54 @@ words or by pointing to the type that states them.
 - **Out of scope.** Providers, hosting, every behavior beyond the checks, the decision
   component, `docs/storage.md`.
 
+### S1R · The architect's list after S1
+
+**Track:** refactoring · **Branch:** `epic-1/sprint-01r-refactoring` · **Refactorer:**
+Opus 5.5, `high` · **Needs:** S1.
+
+- **Goal.** The four entries below, taken from the architect's review after S1, each its
+  own commit with the build and every test green after it. No behavior, public member or
+  public documentation changes, and no assertion except as entry 1 says.
+- **KISS** (`AGENTS.md`, "Keep It Simple") holds here as everywhere. A change that makes the
+  code larger, more abstract or more general than today's case needs is not a refactoring.
+- **Entries**, each with what stays unchanged.
+  1. **A check proven by a cancelled task.** The helper `CallCommit()` of
+     `src/Moltaro.Work.Tests/Enqueue/EnqueueTests.cs`, used by
+     `A_null_queue_is_refused_first`,
+     `An_enqueue_after_CommitAsync_was_called_is_refused_before_the_arguments_are_checked`
+     and the two tests `…_leaves_the_transaction_open_for_enqueues_and_the_commit`, and
+     the first call of `A_second_run_is_refused` in
+     `src/Moltaro.Work.Tests/Workers/WorkWorkerTests.cs`, pass an already-cancelled token
+     and assert a cancelled task, as `CommitTests` does, instead of
+     `NotSupportedException`. By the cancellation rule such a call passes the
+     checks, counts and gives a cancelled task in every stage, so these tests hold when S5
+     implements `CommitAsync` and S7 `RunAsync`. The coordinator agreed to this change of
+     the assertions' form; the commit says why. Unchanged: what each test states, and the
+     two `…_is_not_supported_yet` tests, which state the stage.
+  2. **`src/Moltaro.Work/WorkChecks.cs`.** Its comment says what its rules share: the
+     schemas rely on those of names, keys, scopes and payloads (column lengths, binary
+     collations, text without U+0000), and the queue and the worker share the checks of
+     options. `MaxQueueNameLength` and `MaxKeyLength` become `private`. Unchanged: every
+     check, its message and its `ParamName`.
+  3. **`WorkTransaction.EnqueueAsync`.** Its two consecutive `if (scope is not null)` blocks
+     become one, the scope's rule checked before the queue's `Scoped`. Unchanged: the order
+     of the checks, which `EnqueueTests` states, and the catch around the store's call,
+     which S2 removes.
+  4. **`WorkItemTests.An_item_checks_nothing_of_its_key_scope_and_payload`** is named for
+     what it shows, for example `An_item_keeps_a_null_key_scope_and_payload`. Unchanged: its
+     assertions.
+- **To read.** [The refactoring sprint](process.md#the-refactoring-sprint); S1's brief.
+- **Acceptance.** From `src`, `dotnet build`, `dotnet test` and
+  `dotnet format --verify-no-changes` pass after each commit; no test is removed; the
+  sample runs as before. No entry touches a measured path.
+- **Out of scope.** What the review joined to S2, S3, S5 and S7; `README.md`, whose "dead
+  letters" a light-track change fixes; a reason for the 3650 days of `WorkQueueOptions`,
+  which no record gives.
+
 ### S2 · The PostgreSQL provider contract and schema
 
 **Track:** full · **Branch:** `epic-1/sprint-02-postgresql-schema` · **Implementer:** Opus
-5.5, `xhigh` · **Needs:** S1.
+5.5, `xhigh` · **Needs:** S1R.
 
 - **Goal.** The package `Moltaro.Work.PostgreSql` exists with its store, refusing, and the
   schema script of version 1, which applies to a real PostgreSQL in CI;
@@ -787,7 +832,11 @@ words or by pointing to the type that states them.
     `Schema/version-1.sql`.
   - `Moltaro.Work.TestSupport`: not packed and no test project; references `Moltaro.Work`
     and `xunit.v3.extensibility.core` for the attributes, not a runner. It holds the
-    shared skip reason; folder `Conformance` holds the suite, as PQ6 (a).
+    shared skip reason; folder `Conformance` holds the suite, as PQ6 (a). It takes from
+    `Moltaro.Work.Tests`, which then references it, `FakeDbConnection`, with a
+    `DbDataSource` over it for the constructor checks of S2 and S3 and a message that no
+    longer names the core, and the filter of `DependencyTests`, as one helper with which
+    each test project asserts its own set.
   - `Moltaro.Work.PostgreSql.Tests`: not packed; references the provider and TestSupport.
   - CI: the `build` job and the job of Publish gain the service container `postgres:15`
     with a health check and `MOLTARO_WORK_POSTGRESQL`, so that the tag's tests pass too; the
@@ -816,13 +865,22 @@ words or by pointing to the type that states them.
     coalescing item, S10 for a log or run item; `CheckDatabaseAsync` and `GetNextDueAsync`
     S7; `RetryAsync`, `GiveUpAsync`, `ReleaseAsync` and `RequeueAsync` S9;
     `DeleteExpiredAsync` S12.
-  - The type documents: PostgreSQL 15 or later, the oldest release supported on 26 November
-    2026, with a database encoding of UTF8, which `CheckDatabaseAsync` checks with the
-    schema version; its own transactions run at READ COMMITTED, which it sets on each; the
+  - Its members of `IWorkStore` carry `/// <inheritdoc/>`, and the type documents only the
+    provider's own facts: PostgreSQL 15 or later, the oldest release supported on
+    26 November 2026, with a database encoding of UTF8, which `CheckDatabaseAsync` checks
+    with the schema version; its own transactions run at READ COMMITTED, which it sets on each; the
     caller's transaction may run at any isolation, and at REPEATABLE READ or SERIALIZABLE an
     enqueue that meets a concurrent change of its key fails with `serialization_failure`
     (40001), and any enqueue may fail with `deadlock_detected` (40P01), both as
     `PostgresException` (W10).
+- **In `Moltaro.Work`**, from the architect's review after S1. The `<returns>` of the five
+  fenced writes of `IWorkStore` say "held, with the claim's fence", as its remarks and the
+  table below do. `WorkTransaction.EnqueueAsync` no longer catches what
+  `IWorkStore.EnqueueAsync` throws by the call: only an enqueue whose task faulted or was
+  cancelled closes the transaction, as S1's brief says, and the provider's
+  `ArgumentException` for a connection of another database, which it now documents, leaves
+  the transaction open, as the core's own argument errors do. S2 lists this under
+  [Changes of the contract](#changes-of-the-contract).
 - **The schema, version 1.** The text of `Schema/version-1.sql`, which the implementer
   writes as it stands here, apart from comments:
 
@@ -922,6 +980,9 @@ words or by pointing to the type that states them.
   - `Moltaro.Work.PostgreSql` references only assemblies of .NET, `Moltaro.Work` and
     Npgsql.
 
+  In `Moltaro.Work.Tests`, area `Enqueue`: an enqueue whose store throws by the call leaves
+  the transaction open for enqueues and the commit.
+
   The conformance suite's frame: an abstract `ConformanceDatabase` in TestSupport that a
   provider's test project derives, with `CreateStore()`, `OpenConnectionAsync(…)` and
   `MoveClockAsync(WorkQueue queue, TimeSpan by)`, which shifts every time of the queue's
@@ -973,7 +1034,8 @@ Opus 5.5, `xhigh` · **Needs:** S2.
   }
   ```
 
-  Constructors and `SchemaScript` as S2's, with `SqlConnection` and `MySqlConnection`.
+  Constructors, `SchemaScript` and the `/// <inheritdoc/>` of the members as S2's, with
+  `SqlConnection` and `MySqlConnection`.
   Every member of `IWorkStore` throws `NotSupportedException` until S14 or S15.
   - `SqlServerWorkStore` documents: SQL Server 2019 or later, or Azure SQL Database; the
     database needs READ_COMMITTED_SNAPSHOT ON, which `CheckDatabaseAsync` checks before a
@@ -1180,13 +1242,17 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
 - **Goal.** A coalescing item enqueued in the caller's transaction on PostgreSQL exists only
   if that transaction commits, and `CommitAsync` then sets its queue's signal.
 - **Contract.** `PostgreSqlWorkStore.EnqueueAsync` for an unscoped coalescing queue, as
-  `docs/storage.md`, W3 and W10 say; `WorkTransaction.CommitAsync`.
+  `docs/storage.md`, W3 and W10 say; `WorkTransaction.CommitAsync`. `Join` hands
+  `WorkTransaction` the client, as `WorkWorker` gets it, and W11 is spelled once: an
+  internal signal key that `WorkQueue` computes once, and one internal constant for the
+  group.
 - **Acceptance.** Conformance, area `Enqueue`: a second enqueue of a committed key reports
   `Coalesced` with the first's id, and after a rollback `Added`; two transactions that
   enqueue one key at once leave one item: at REPEATABLE READ the second either fails with
   the error its provider documents (W10) or waits and reports `Coalesced`. The queue's
   member is signalled after `CommitAsync`, not after a rollback, a failed commit or a failed
-  enqueue. The sample `EnqueueInTransaction` runs to the end.
+  enqueue; that case moves `LoopbackSignalHost` to TestSupport. The sample
+  `EnqueueInTransaction` runs to the end.
 - **Out of scope.** Claims, logs, runs, scopes.
 
 ### S6 · Claim, lease, heartbeat and fenced completion
@@ -1224,8 +1290,10 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
 - **Contract.** `WorkWorker.RunAsync`; `CheckDatabaseAsync` and `GetNextDueAsync` of
   PostgreSQL; the decision component, folder and namespace `Moltaro.Work.Policy`, depending
   on nothing of the library, for the wait of W6 and for when a lease counts as lost, its
-  internal types named with the stage's contract. No lock is held across the await of a
-  handler, and each claim's lease is judged by its own heartbeats. Until S9 a failed
+  internal types named with the stage's contract. The stage's contract also names the
+  internal types of the loop, so that `WorkWorker` does not hold every responsibility of
+  it. No lock is held across the await of a handler, and each claim's lease is judged by
+  its own heartbeats. Until S9 a failed
   handler's item is left to its lease, and the refusal of `RetryAsync` is reported through
   `Failed`. `Failed` is raised by a loop over its invocation list
   (`Delegate.EnumerateInvocationList`), one subscriber at a time, and the
@@ -1234,8 +1302,9 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
   the decision component with the waking, then the lanes with heartbeats and stop.
 - **Acceptance.** Policy tests of the wait and of lease loss at their edges. Conformance,
   area `Worker`, with an in-process `SignalHost` and one `FakeTimeProvider` for host and
-  worker: a commit starts the handler without moving a clock; an item due in 30 seconds
-  starts once both clocks moved; an idle worker sends no statement before its idle bound and
+  worker, which `LoopbackSignalHost` takes as a parameter: a commit starts the handler
+  without moving a clock; an item due in 30 seconds starts once both clocks moved; an idle
+  worker sends no statement before its idle bound and
   one then, counted through the driver's tracing; two workers of one lane each share a
   commit of three items without waiting for an idle bound, and a due time reached while one
   worker's lanes are busy, or a completion that applies a mark, wakes the other (W16); a due
