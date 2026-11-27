@@ -1,2 +1,5 @@
 <Solution>
+  <Project Path="Moltaro.Work/Moltaro.Work.csproj" />
+  <Project Path="Moltaro.Work.Samples/Moltaro.Work.Samples.csproj" />
+  <Project Path="Moltaro.Work.Tests/Moltaro.Work.Tests.csproj" />
 </Solution>
