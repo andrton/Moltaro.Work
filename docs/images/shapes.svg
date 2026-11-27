@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 620" width="920" height="620" role="img" aria-labelledby="shapes-title shapes-desc">
   <title id="shapes-title">The three shapes of work: coalescing, log and run</title>
-  <desc id="shapes-desc">Three timelines. Coalescing: five enqueues of one key become one item, which runs once; three enqueues during that run set a mark, so the item runs exactly once more and is then deleted. Log: three enqueues become three items, each runs once and each is deleted. Run: an enqueue with the key nightly-import becomes a run; a second enqueue with the same key while the first is active adds nothing; after success the run is kept with its outcome for the queue's retention.</desc>
+  <desc id="shapes-desc">Three timelines. Coalescing: five enqueues of the key invoice-42 while the item waits leave one item, which runs once; three enqueues during that run add one mark, so the item runs once more and is then deleted. Log: three enqueues become three items, each runs once and each is deleted. Run: an enqueue with the optional key nightly-import becomes a run; a second enqueue with the same key while the first is active adds nothing; after success the run is kept with its outcome for the queue's retention.</desc>
   <style>
     text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; fill: #334155; }
     .title { font-size: 20px; font-weight: 600; fill: #0f172a; }
@@ -55,7 +55,7 @@
     <use href="#arrow" x="872" y="190"/>
     <text x="872" y="180" class="note" text-anchor="end">time</text>
 
-    <text x="310" y="124" class="label">5 enqueues of <tspan class="mono">invoice-42</tspan></text>
+    <text x="310" y="124" class="label">5 enqueues while it waits</text>
     <path d="M282 145 C282 162 310 160 310 177" class="feed"/>
     <path d="M296 145 C296 162 310 160 310 177" class="feed"/>
     <path d="M310 145 L310 177" class="feed"/>
@@ -67,7 +67,7 @@
     <circle cx="324" cy="140" r="4.5" class="enqueue"/>
     <circle cx="338" cy="140" r="4.5" class="enqueue"/>
     <rect x="270" y="177" width="80" height="26" rx="6" class="item"/>
-    <text x="310" y="194" class="in-item">1 item</text>
+    <text x="310" y="194" class="in-item mono">invoice-42</text>
 
     <rect x="362" y="177" width="200" height="26" rx="6" class="run"/>
     <text x="462" y="194" class="in-run">handler runs</text>
@@ -138,6 +138,7 @@
     <text x="40" y="470" class="tagline">“an operation whose</text>
     <text x="40" y="488" class="tagline">history matters”</text>
     <text x="40" y="512" class="detail">one item per enqueue, payload</text>
+    <text x="40" y="528" class="detail">optional key: one active at a time</text>
 
     <line x1="260" y1="490" x2="872" y2="490" class="axis"/>
     <use href="#arrow" x="872" y="490"/>
@@ -158,7 +159,7 @@
 
     <rect x="584" y="466" width="276" height="48" rx="8" class="kept"/>
     <text x="598" y="486" class="kept-head">kept with its outcome</text>
-    <text x="598" y="504" class="kept-body">succeeded · started 10:00 · finished 10:03</text>
+    <text x="598" y="504" class="kept-body">succeeded · enqueued 10:00 · finished 10:03</text>
   </g>
 
   <line x1="40" y1="550" x2="880" y2="550" class="divider"/>
