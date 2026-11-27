@@ -19,7 +19,7 @@ public sealed class WorkItemTests
     }
 
     [Fact]
-    public void An_item_checks_nothing_of_its_key_scope_and_payload()
+    public void An_item_keeps_a_null_key_scope_and_payload()
     {
         var item = new WorkItem(Mail, id: 1, key: null, scope: null, payload: null, attempt: 1);
 
