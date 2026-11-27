@@ -1,7 +1,7 @@
 # Epic 1: First release
 
-**Status:** approved by the owner on 27 November 2026, with the contract of Stage 1; S1
-and S1R done, S2 next.
+**Status:** approved by the owner on 27 November 2026, with the contract of Stage 1; S1,
+S1R and S2 done, S3 next.
 
 ## Standing permission
 
@@ -475,7 +475,7 @@ two more databases against a finished conformance suite.
 | --- | --- | --- | --- |
 | S1 | The core contract and the test lane | Full | Done, in three review rounds |
 | S1R | The architect's list after S1 | Refactoring | Done, in two review rounds |
-| S2 | The PostgreSQL provider contract and schema | Full | Not started |
+| S2 | The PostgreSQL provider contract and schema | Full | Done, in two review rounds |
 | S3 | The SQL Server and MySQL provider contracts and schemas | Full | Not started |
 | S4 | The hosting contract and the samples | Full | Not started |
 | S5 | Coalescing enqueue and the commit that wakes, on PostgreSQL | Full | Not started |
@@ -1017,8 +1017,8 @@ Opus 5.5, `high` · **Needs:** S1.
   rows back by `by`; and one abstract test class per area — `Enqueue`, `Claims`, `Worker`,
   `Retries`, `Shapes`, `Scopes`, `Retention` — each derived by
   `Moltaro.Work.PostgreSql.Tests`. Each area holds, skipped, the cases of
-  [Rules and their tests](#rules-and-their-tests) that name its sprint; later sprints add
-  the cases of their briefs.
+  [Rules and their tests](#rules-and-their-tests) that name its sprint, except the area
+  `Worker`, which S7 fills; later sprints add the cases of their briefs.
 
   The samples, as [Rules for every sprint](#rules-for-every-sprint), "Samples", lists them:
   `DeclaringQueues` moves into `01-Start`, without its closing remark about S2, and
@@ -1314,8 +1314,9 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
 - **Contract.** `ClaimAsync` for an unscoped queue, `HeartbeatAsync`, and `CompleteAsync`
   for a coalescing item.
 - **Acceptance.** Conformance, area `Claims`: a committed item is claimable (rule 1); many
-  claimers at once never return one item twice and together return all; a claim returns at most `count`; an item due later by the
-  database's clock is claimed only once that clock is moved; an enqueue while waiting moves
+  claimers at once never return one item twice and together return all; a claim returns
+  at most `count`; an item due later by the database's clock is claimed only once that
+  clock is moved; an enqueue while waiting moves
   the due time earlier, unless the item waits for a retry (PQ8), and one while held makes
   the item run once more after its completion; an item whose holder died is claimed by
   another with the next attempt and a new fence, unless a heartbeat kept its lease; a
@@ -1349,8 +1350,8 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
   If one agent and one review cannot carry S7, the stage's contract splits it:
   the decision component with the waking, then the lanes with heartbeats and stop.
 - **Acceptance.** Policy tests of the wait and of lease loss at their edges. Conformance,
-  area `Worker`, whose class S2 left empty and S7 fills, with an in-process `SignalHost` and one `FakeTimeProvider` for host and
-  client, which `LoopbackSignalHost` takes as a parameter: a commit starts the handler
+  area `Worker`, whose class S2 left empty and S7 fills, with an in-process `SignalHost`
+  and one `FakeTimeProvider` for host and client, which `LoopbackSignalHost` takes as a parameter: a commit starts the handler
   without moving a clock; an item due in 30 seconds starts once both clocks moved; an idle
   worker sends no statement before its idle bound and
   one then, counted through the driver's tracing; two workers of one lane each share a
