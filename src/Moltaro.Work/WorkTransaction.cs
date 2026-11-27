@@ -104,6 +104,10 @@ public sealed class WorkTransaction
     /// <see cref="ArgumentException.ParamName"/> <c>transaction</c>. An argument error writes nothing and leaves the
     /// transaction open for enqueues and the commit.
     /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// Thrown by the call, after the checks: the provider does not implement the enqueue yet. It writes nothing and
+    /// leaves the transaction open.
+    /// </exception>
     /// <exception cref="DbException">Reported by the task: the database failed; the driver's exception.</exception>
     /// <exception cref="OperationCanceledException">
     /// Reported by the task: <paramref name="cancellationToken"/> was cancelled.
@@ -172,9 +176,10 @@ public sealed class WorkTransaction
             return Task.FromCanceled<WorkEnqueueResult>(cancellationToken);
         }
 
-        // What the store throws by the call is an argument error, such as its ArgumentException for a connection of
-        // another database, and wrote nothing: like the core's own argument errors, it leaves the transaction open.
-        // Only a task that faulted or was cancelled closes it.
+        // What the store throws by the call wrote nothing: an argument error, such as its ArgumentException for a
+        // connection of another database, or its NotSupportedException until the sprint that implements the enqueue.
+        // Like the core's own argument errors it leaves the transaction open; only a task that faulted or was cancelled
+        // closes it.
         Task<WorkEnqueueResult> enqueue = _store.EnqueueAsync(_transaction, queue, key, scope, payload, dueAt, cancellationToken);
 
         return RememberAsync(enqueue, queue);

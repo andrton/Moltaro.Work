@@ -133,7 +133,8 @@ published yet. [Branches and releases](docs/work/branches.md) describes how work
 
 - [Concept](docs/concept.md): where it comes from, shapes and rules, providers, decisions
   and quality bar.
-- [Storage](docs/storage.md): the provider contract and the schema of each database.
+- [Storage](docs/storage.md): the provider contract and the schema of PostgreSQL; those of
+  SQL Server and MySQL are planned.
 - [Documentation index](docs/README.md) and [current work](docs/work/README.md).
 - [How the project is built](AGENTS.md): architectural principles, code style and working
   rules, for people and coding agents.
@@ -151,10 +152,11 @@ dotnet build
 dotnet test
 ```
 
-The tests of the PostgreSQL provider need a PostgreSQL 15 or later on which they may create a
-database, named by the connection string in `MOLTARO_WORK_POSTGRESQL`; without it they fail.
-The samples run with `dotnet run --project Moltaro.Work.Samples`, and those that need a
-database use the same variable.
+`MOLTARO_WORK_POSTGRESQL` holds a connection string to PostgreSQL 15 or later. The tests of
+the PostgreSQL provider use it as a server where each run creates a database of its own and
+drops it at the end; without it they fail. The samples, run with
+`dotnet run --project Moltaro.Work.Samples`, use it as a database where they create their
+tables and leave them.
 
 ## License
 

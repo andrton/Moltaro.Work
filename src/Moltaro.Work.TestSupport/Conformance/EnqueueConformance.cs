@@ -3,7 +3,7 @@ using System.Data.Common;
 namespace Moltaro.Work.TestSupport.Conformance;
 
 // The enqueue in the caller's transaction (rule 1 of concept section 3): an item exists only if that transaction
-// commits.
+// commits, as a second enqueue of the same key on a coalescing queue shows.
 public abstract class EnqueueConformance
 {
     private readonly ConformanceDatabase _database;
@@ -14,7 +14,7 @@ public abstract class EnqueueConformance
     }
 
     [Fact(Skip = SkipReason.NotImplemented)]
-    public async Task A_rolled_back_enqueue_leaves_nothing_to_claim()
+    public async Task After_a_rolled_back_enqueue_the_same_key_is_added_again()
     {
         CancellationToken cancellationToken = TestContext.Current.CancellationToken;
         WorkQueue queue = ConformanceDatabase.CreateQueue(WorkShapeEnum.Coalescing);
@@ -28,23 +28,23 @@ public abstract class EnqueueConformance
             await transaction.RollbackAsync(cancellationToken);
         }
 
-        Assert.Empty(await store.ClaimAsync(queue, 10, ConformanceDatabase.Lease, cancellationToken));
+        WorkEnqueueResult again = await _database.EnqueueCommittedAsync(store, queue, "invoice-7", null, cancellationToken);
+
+        Assert.Equal(WorkEnqueueStatusEnum.Added, again.Status);
     }
 
     [Fact(Skip = SkipReason.NotImplemented)]
-    public async Task A_committed_enqueue_is_claimable()
+    public async Task After_a_committed_enqueue_the_same_key_coalesces_into_its_item()
     {
         CancellationToken cancellationToken = TestContext.Current.CancellationToken;
         WorkQueue queue = ConformanceDatabase.CreateQueue(WorkShapeEnum.Coalescing);
         IWorkStore store = _database.CreateStore();
 
-        WorkEnqueueResult enqueued = await _database.EnqueueCommittedAsync(store, queue, "invoice-7", null, cancellationToken);
+        WorkEnqueueResult first = await _database.EnqueueCommittedAsync(store, queue, "invoice-7", null, cancellationToken);
+        WorkEnqueueResult second = await _database.EnqueueCommittedAsync(store, queue, "invoice-7", null, cancellationToken);
 
-        Assert.Equal(WorkEnqueueStatusEnum.Added, enqueued.Status);
-        WorkClaim claim = Assert.Single(await store.ClaimAsync(queue, 10, ConformanceDatabase.Lease, cancellationToken));
-        Assert.Equal(enqueued.ItemId, claim.Item.Id);
-        Assert.Equal(queue.Name, claim.Item.Queue.Name);
-        Assert.Equal("invoice-7", claim.Item.Key);
-        Assert.Equal(1, claim.Item.Attempt);
+        Assert.Equal(WorkEnqueueStatusEnum.Added, first.Status);
+        Assert.Equal(WorkEnqueueStatusEnum.Coalesced, second.Status);
+        Assert.Equal(first.ItemId, second.ItemId);
     }
 }

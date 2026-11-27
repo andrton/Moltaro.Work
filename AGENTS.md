@@ -20,7 +20,10 @@ time, never on a fixed polling interval.
 What exists today is the **concept** and the **public contract of the core**, the package
 `Moltaro.Work`, documented: its types check their arguments and options, `WorkClient.Join`
 and `WorkTransaction.EnqueueAsync` hand a checked enqueue to the provider, and every other
-entry point throws `NotSupportedException`. Nothing else is implemented yet. The
+entry point throws `NotSupportedException`. The **PostgreSQL provider**
+`Moltaro.Work.PostgreSql` exists as its contract and its schema script of version 1: its
+store checks its data source, and each of its operations throws `NotSupportedException`.
+Nothing else is implemented yet. The
 [concept](docs/concept.md) is the authority for what the library guarantees: its shapes,
 its rules, its decisions D1–D16 and its non-goals. `README.md` says what works today; a
 feature is delivered when the README says so.
@@ -34,7 +37,7 @@ of its modules, tables or customers, in code, tests, samples or documents.
 | --- | --- |
 | `src` | The solution, every project and the build settings. Run `dotnet` from here. The solution holds the projects created so far |
 | `docs/concept.md` | Where the library comes from, its semantics, decisions, non-goals and quality bar |
-| `docs/storage.md` | (planned) The provider contract and the schema of each database, written with the sprint that introduces them |
+| `docs/storage.md` | The provider contract and the schema of each database, written with the sprint that introduces them |
 | `docs/explanations` | (planned) Explanations of the architecture and of how the library works, each as Markdown and as HTML |
 | `docs/images` | Pictures that the documents show |
 | `docs/work` | Working documents: the epics in progress, the development process, branches and releases, exceptions to the rules, open questions |

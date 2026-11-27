@@ -78,8 +78,8 @@ public sealed class PostgreSqlWorkStore : IWorkStore
     /// connection's default schema.
     /// </summary>
     /// <remarks>
-    /// The application applies it once, with its own migration tool, before a worker runs. It is the file
-    /// <c>Schema/version-1.sql</c> of the package.
+    /// The application applies it once, with its own migration tool, before a worker runs. The assembly carries it as
+    /// an embedded resource, made from the source file <c>Schema/version-1.sql</c> of the provider.
     /// </remarks>
     public static string SchemaScript { get; } = ReadSchemaScript();
 

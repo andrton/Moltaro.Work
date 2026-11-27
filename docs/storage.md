@@ -61,7 +61,8 @@ ended and never the time until a lease ends, and until an item is expired.
 ## The schema, version 1
 
 The same three tables in every database, created by the provider's script in the connection's
-default schema. The script of each database is below.
+default schema. Only PostgreSQL's script is below today; those of SQL Server and MySQL come with
+S3 of the first epic.
 
 `moltaro_work_item` holds the items of every queue:
 
@@ -75,7 +76,7 @@ default schema. The script of each database is below.
 | `scope` | The item's scope, or `NULL` |
 | `payload` | The payload of a log or run item, as text; `NULL` for a coalescing item |
 | `due_at` | When a waiting item may be claimed |
-| `again_due_at` | The mark "run again" of a held coalescing item: the earliest due time that an enqueue asked for while it was held |
+| `again_due_at` | The mark "run again" of a coalescing item: the earliest due time that an enqueue asked for while the item was held. A retry or a release keeps it, so a waiting item can carry it too |
 | `lease_until` | When a held item's lease ends; set exactly while the item is held |
 | `fence` | Grows by one with every claim and is never reset |
 | `attempts` | The claims since the item was added, revived or requeued, less those a release gave back |
@@ -105,8 +106,10 @@ Rules every provider keeps:
 - **Times** are stored in UTC to the microsecond, truncated.
 - **No foreign key**, because `READPAST` and skip-locked reads still wait on them.
 - **Limits that the schema fixes.** A queue name is at most 100 characters, a key and a scope at
-  most 200, a reason at most 4000. The core refuses a longer name, key or scope and cuts a longer
-  reason. These limits change only with the schema's version.
+  most 200, as their columns fix; the core refuses a longer one. A reason is at most 4000
+  characters, a rule of the core and not of a column on PostgreSQL, whose `reason` is `text`: the
+  worker is to cut a longer reason to that length, never inside a surrogate pair, which is
+  planned and not implemented yet. These limits change only with the schema's version.
 
 ## Reading the tables
 

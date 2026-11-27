@@ -1,7 +1,8 @@
 namespace Moltaro.Work.TestSupport.Conformance;
 
-// Claims, leases and fences (rules 4, 5, 6 and 9 of concept section 3): a claim is exclusive, a heartbeat keeps a
-// lease, an ended lease makes the item claimable again as another attempt, and only the current holder writes.
+// Claims, leases and fences (rules 1, 4, 5, 6 and 9 of concept section 3): a committed item is claimable, a claim is
+// exclusive, a heartbeat keeps a lease, an ended lease makes the item claimable again as another attempt, and only the
+// current holder writes.
 public abstract class ClaimsConformance
 {
     private readonly ConformanceDatabase _database;
@@ -9,6 +10,22 @@ public abstract class ClaimsConformance
     protected ClaimsConformance(ConformanceDatabase database)
     {
         _database = database;
+    }
+
+    [Fact(Skip = SkipReason.NotImplemented)]
+    public async Task A_committed_item_is_claimable()
+    {
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        WorkQueue queue = ConformanceDatabase.CreateQueue(WorkShapeEnum.Coalescing);
+        IWorkStore store = _database.CreateStore();
+
+        WorkEnqueueResult enqueued = await _database.EnqueueCommittedAsync(store, queue, "invoice-7", null, cancellationToken);
+
+        WorkClaim claim = Assert.Single(await store.ClaimAsync(queue, 10, ConformanceDatabase.Lease, cancellationToken));
+        Assert.Equal(enqueued.ItemId, claim.Item.Id);
+        Assert.Equal(queue.Name, claim.Item.Queue.Name);
+        Assert.Equal("invoice-7", claim.Item.Key);
+        Assert.Equal(1, claim.Item.Attempt);
     }
 
     // Each claimer has a store of its own, as the workers of several processes do, and claims until it finds nothing.
