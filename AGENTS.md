@@ -116,7 +116,9 @@ concept.
     deadline. A timeout or a limit an application can observe — lease length, heartbeat
     interval, batch size, attempt limit, backoff, retention, idle bound, lanes — is an
     option with a default, validated when the queue or worker is created; it is never a
-    constant in the code.
+    constant in the code, unless a column of the schema fixes it — the length of a queue
+    name, a key, a scope or a reason: such a limit is part of the schema, stated in
+    `docs/storage.md`, and changes only with the schema's version.
 11. **Never an approximate success.** A request is honored or refused with a code. An
     enqueue that did not reach the transaction, a completion refused by the fence and an
     item given up are distinct outcomes.
