@@ -17,8 +17,8 @@ namespace Moltaro.Work.MySql;
 /// </para>
 /// <para>
 /// The transactions of its own operations run at READ COMMITTED, which it sets on each. The caller's transaction of
-/// <see cref="EnqueueAsync"/> may run at any isolation. At MySQL's default REPEATABLE READ, concurrent enqueues of one
-/// key in callers' transactions can deadlock (1213) or wait out <c>innodb_lock_wait_timeout</c> (1205), both as a
+/// <see cref="EnqueueAsync"/> may run at any isolation, and at every one an enqueue may fail as a deadlock (1213), or
+/// after waiting out <c>innodb_lock_wait_timeout</c> (1205) for a row that another transaction holds, both as a
 /// <see cref="MySqlException"/>: the caller rolls its transaction back and retries it, as for any write.
 /// </para>
 /// <para>

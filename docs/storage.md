@@ -5,9 +5,9 @@ the schema mean, and what each database needs. The schema is part of the public 
 application creates the tables with a provider's script and may read them.
 
 **What exists.** The provider contract `IWorkStore` of the core, and three providers with their
-schema scripts: `Moltaro.Work.PostgreSql`, `Moltaro.Work.SqlServer` and `Moltaro.Work.MySql`. No
-operation is implemented yet: every operation of their stores throws `NotSupportedException`, and
-each is planned.
+schema scripts: `Moltaro.Work.PostgreSql`, `Moltaro.Work.SqlServer` and `Moltaro.Work.MySql`. Each
+store checks its data source and refuses the transaction of an enqueue on another database; every
+one of its operations throws `NotSupportedException`, and each is planned.
 
 ## The provider contract
 
@@ -93,9 +93,9 @@ queue by `finished_at`, for retention.
 the held item's `item_id`. Its primary key on `queue` and `scope` is the scope rule, kept without
 advisory locks.
 
-`moltaro_work_schema` holds one row, the version of the schema. A later version comes with a
-script that changes the tables and that row, and a store refuses, in `CheckDatabaseAsync`, a
-database whose version is not its own.
+`moltaro_work_schema` holds one row, the version of the schema, which is its primary key. A later
+version comes with a script that changes the tables and that row, and a store refuses, in
+`CheckDatabaseAsync`, a database whose version is not its own.
 
 Rules every provider keeps:
 
@@ -138,7 +138,8 @@ bytes:
 ```sql
 -- Moltaro.Work schema version 1, PostgreSQL 15 or later.
 CREATE TABLE moltaro_work_schema (
-    version integer NOT NULL
+    version integer NOT NULL,
+    CONSTRAINT moltaro_work_schema_pk PRIMARY KEY (version)
 );
 
 INSERT INTO moltaro_work_schema (version) VALUES (1);
@@ -218,7 +219,8 @@ SET ANSI_NULLS, ANSI_PADDING, ANSI_WARNINGS, ARITHABORT, CONCAT_NULL_YIELDS_NULL
 SET NUMERIC_ROUNDABORT OFF;
 
 CREATE TABLE moltaro_work_schema (
-    version int NOT NULL
+    version int NOT NULL,
+    CONSTRAINT moltaro_work_schema_pk PRIMARY KEY (version)
 );
 
 INSERT INTO moltaro_work_schema (version) VALUES (1);
@@ -274,8 +276,8 @@ CREATE TABLE moltaro_work_scope (
   schema, where the store looks for them.
 - **Isolation.** The store's own transactions run at READ COMMITTED, which it sets on each. The
   caller's transaction of an enqueue may run at any isolation.
-- **Errors of an enqueue.** At MySQL's default REPEATABLE READ, concurrent enqueues of one key in
-  callers' transactions can deadlock (1213) or wait out `innodb_lock_wait_timeout` (1205). Both
+- **Errors of an enqueue.** At any isolation an enqueue may fail as a deadlock (1213), or after
+  waiting out `innodb_lock_wait_timeout` (1205) for a row that another transaction holds. Both
   reach the caller as a `MySqlException`. After a deadlock MySQL has rolled the transaction back;
   after a lock wait timeout it has undone that statement alone, unless `innodb_rollback_on_timeout`
   is on.
@@ -290,7 +292,8 @@ pad:
 ```sql
 -- Moltaro.Work schema version 1, MySQL 8.4 or later, InnoDB. Times are UTC.
 CREATE TABLE moltaro_work_schema (
-    version int NOT NULL
+    version int NOT NULL,
+    CONSTRAINT moltaro_work_schema_pk PRIMARY KEY (version)
 ) ENGINE = InnoDB;
 
 INSERT INTO moltaro_work_schema (version) VALUES (1);

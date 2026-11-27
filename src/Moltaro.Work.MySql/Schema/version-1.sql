@@ -3,7 +3,8 @@
 -- its default schema; the application applies this script once, with its own migration tool.
 
 CREATE TABLE moltaro_work_schema (
-    version int NOT NULL
+    version int NOT NULL,
+    CONSTRAINT moltaro_work_schema_pk PRIMARY KEY (version)
 ) ENGINE = InnoDB;
 
 INSERT INTO moltaro_work_schema (version) VALUES (1);

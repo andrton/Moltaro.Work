@@ -8,7 +8,8 @@ SET ANSI_NULLS, ANSI_PADDING, ANSI_WARNINGS, ARITHABORT, CONCAT_NULL_YIELDS_NULL
 SET NUMERIC_ROUNDABORT OFF;
 
 CREATE TABLE moltaro_work_schema (
-    version int NOT NULL
+    version int NOT NULL,
+    CONSTRAINT moltaro_work_schema_pk PRIMARY KEY (version)
 );
 
 INSERT INTO moltaro_work_schema (version) VALUES (1);
