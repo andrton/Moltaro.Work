@@ -99,7 +99,7 @@ acceptance. "Today" is the state on 26 November 2026: no code exists.
 | R8 | Retention per queue, deleted in bounded batches, never an item that is not finished or dead | Rule 11, D6 | Must | Absent | S12 |
 | R9 | Due times and lease ends are compared with the database's time, and so is the deadline a worker waits for (W6) | Rule 12, D4 | Must | Absent | S5–S7, S12 |
 | R10 | A worker waits for its signal, its earliest due time or its idle bound; no statement while nothing is due | Rule 3, D7, principle 5 | Must | Absent | S7, S12 |
-| R11 | Every observable timeout and limit is an option with a default, validated when its queue or worker is created | Principle 10 | Must | Absent | S1 |
+| R11 | Every observable timeout and limit is an option with a default, validated when its queue or worker is created, except a limit that a column of the schema fixes | Principle 10 | Must | Absent | S1 |
 | R12 | Distinct results: added or coalesced, a write accepted or refused by the fence, requeued or not; never an invented success | Principle 11 | Must | Absent | S1, S5, S6, S9 |
 | R13 | The provider contract, and one provider per database with its best SQL, its versioned schema script, its minimum version and the isolation it needs | Concept §4, D8, D11 | Must | Absent | S1–S3, S5–S12, S14, S15 |
 | R14 | One conformance suite, written once against the provider contract, run by each provider's test project on its real database in CI, with the concurrency cases of `AGENTS.md` | Concept §4, §9; `AGENTS.md` | Must | Absent | S2, S3, S5–S12, S14, S15 |
@@ -143,6 +143,11 @@ here for the owner, with the sprint and the reason.
   one threw. The owner decided it on 27 November 2026, so that one failing subscriber does
   not keep the others from the report. What follows for `RunAsync` is in S1's brief, under
   `WorkWorker(...)`. S7 implements it.
+- **S4, the clock of `WorkClient`.** `WorkClient(IWorkStore store, ISignals signals,
+  TimeProvider? timeProvider = null)`, where `null` means `TimeProvider.System`, gives its
+  workers their clock, and `WorkWorkerOptions.TimeProvider` is removed. The owner decided
+  it on 27 November 2026 (Q6), so that the clock W6 ties to the `ISignals` is given once,
+  next to it, and two workers of one client cannot differ. S4 makes it.
 
 ## Open questions
 
@@ -297,11 +302,11 @@ owner with this plan. Briefs point to these entries; the contract of Stage 1 car
   Times are stored in UTC to the microsecond, truncated.
 - **W6. The deadline of a wait.** The provider returns durations computed in SQL: from the
   database's now to the next claimable time and to the next expiry. The worker adds the
-  shorter one, bounded by its idle bound, to the now of its `TimeProvider`, and passes that
-  instant as the `until` of `ISignalSubscription.WaitAsync`. A duration compares no two
-  clocks, so rule 12 holds; the error is the drift of one clock during one wait. The
-  worker's `TimeProvider` is therefore the one of its `ISignals`: `TimeProvider.System`
-  for both in production, the same fake in tests.
+  shorter one, bounded by its idle bound, to the now of its client's `TimeProvider`, and
+  passes that instant as the `until` of `ISignalSubscription.WaitAsync`. A duration
+  compares no two clocks, so rule 12 holds; the error is the drift of one clock during one
+  wait. The client's `TimeProvider` is therefore the one of its `ISignals`:
+  `TimeProvider.System` for both in production, the same fake in tests.
 - **W7. Lease ends are not wake-ups.** A worker does not wait for lease ends, which
   heartbeats keep moving, so that no member wakes for nothing. An item whose holder died is
   claimed again by the next claim of any worker after its lease ended, at the latest at an
@@ -511,7 +516,7 @@ words or by pointing to the type that states them.
   payload is any string without U+0000 or an unpaired surrogate (W4). All of them compare
   exactly, case included.
 - **Time.** Due times and lease ends are the database's (rule 12, W5–W7). A worker's own
-  timers use the `TimeProvider` of its options.
+  timers use the `TimeProvider` of its client, from S4 (Q6).
 
 ### S1 · The core contract and the test lane
 
@@ -1196,8 +1201,10 @@ Opus 5.5, `xhigh` · **Needs:** S2.
   - Both: a `null` argument that is not optional → `ArgumentNullException`; then
     `NotSupportedException` until S8.
   - `AddWork` documents: it registers the `IWorkStore` that `createStore` makes, once, and
-    a `WorkClient` over it and the container's `ISignals`, both singletons; the `ISignals`
-    comes from `AddSignalHost` or `AddSignalClient` of `Moltaro.Signals.Hosting`, and a
+    a `WorkClient` over it and the container's `ISignals`, both singletons; the client's
+    clock is the container's `TimeProvider` when one is registered, `TimeProvider.System`
+    otherwise, and has to be the clock of that `ISignals` (W6); the `ISignals` comes from
+    `AddSignalHost` or `AddSignalClient` of `Moltaro.Signals.Hosting`, and a
     container without one fails when the client is resolved; the application owns and
     disposes what the store uses, such as its data source.
   - `AddWorkWorker<THandler>` documents: it registers `THandler` as scoped, unless it is
@@ -1212,6 +1219,10 @@ Opus 5.5, `xhigh` · **Needs:** S2.
     Warning, when a handler threw, with `Queue`, `ItemId`, `Attempt` and the exception;
     the same category, Error, when the worker raised `Failed`, with `Queue` and the
     exception.
+- **In `Moltaro.Work`**, in the contract commit: the clock of `WorkClient`, as the owner
+  decided it (Q6) and [Changes of the contract](#changes-of-the-contract) lists it.
+  `WorkWorkerOptions.TimeProvider` goes with its tests and documentation, and `WorkClient`
+  documents its `timeProvider` as W6 says.
 - **To read.** S1's brief; `SignalServiceCollectionExtensions` of `Moltaro.Signals.Hosting`
   0.1.0.
 - **Acceptance.** Tests that pass: the argument checks of both methods; the references of
@@ -1302,7 +1313,7 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
   the decision component with the waking, then the lanes with heartbeats and stop.
 - **Acceptance.** Policy tests of the wait and of lease loss at their edges. Conformance,
   area `Worker`, with an in-process `SignalHost` and one `FakeTimeProvider` for host and
-  worker, which `LoopbackSignalHost` takes as a parameter: a commit starts the handler
+  client, which `LoopbackSignalHost` takes as a parameter: a commit starts the handler
   without moving a clock; an item due in 30 seconds starts once both clocks moved; an idle
   worker sends no statement before its idle bound and
   one then, counted through the driver's tracing; two workers of one lane each share a
