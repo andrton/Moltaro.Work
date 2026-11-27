@@ -120,7 +120,7 @@ public interface IWorkStore
     /// <param name="lease">The new lease, counted from the database's now.</param>
     /// <param name="cancellationToken">Ends the wait for the database, as the remarks of <see cref="IWorkStore"/> say.</param>
     /// <returns>
-    /// The claims it refused, whose fence is no longer the item's current one; their items are not changed. Empty when
+    /// The claims it refused, whose item is not held with the claim's fence; their items are not changed. Empty when
     /// every lease was renewed.
     /// </returns>
     Task<IReadOnlyList<WorkClaim>> HeartbeatAsync(IReadOnlyList<WorkClaim> claims, TimeSpan lease, CancellationToken cancellationToken);
@@ -131,8 +131,8 @@ public interface IWorkStore
     /// <param name="claim">The claim of the item.</param>
     /// <param name="cancellationToken">Ends the wait for the database, as the remarks of <see cref="IWorkStore"/> say.</param>
     /// <returns>
-    /// <see langword="true"/> when the item was completed; <see langword="false"/> when the claim's fence is not the
-    /// item's current one, and nothing was written.
+    /// <see langword="true"/> when the item was completed; <see langword="false"/> when the item is not held with the
+    /// claim's fence, and nothing was written.
     /// </returns>
     /// <remarks>
     /// A coalescing item is deleted, or, when an enqueue marked it to run again while it was held, is waiting again at
@@ -149,8 +149,8 @@ public interface IWorkStore
     /// <param name="reason">The reason kept with the item; at most 4000 characters.</param>
     /// <param name="cancellationToken">Ends the wait for the database, as the remarks of <see cref="IWorkStore"/> say.</param>
     /// <returns>
-    /// <see langword="true"/> when the item is waiting again; <see langword="false"/> when the claim's fence is not
-    /// the item's current one, and nothing was written.
+    /// <see langword="true"/> when the item is waiting again; <see langword="false"/> when the item is not held with
+    /// the claim's fence, and nothing was written.
     /// </returns>
     /// <remarks>
     /// The item is due at the database's now plus <paramref name="delay"/> and keeps its attempts. A mark to run again
@@ -165,8 +165,8 @@ public interface IWorkStore
     /// <param name="reason">The reason kept with the item; at most 4000 characters.</param>
     /// <param name="cancellationToken">Ends the wait for the database, as the remarks of <see cref="IWorkStore"/> say.</param>
     /// <returns>
-    /// <see langword="true"/> when the item was given up; <see langword="false"/> when the claim's fence is not the
-    /// item's current one, and nothing was written.
+    /// <see langword="true"/> when the item was given up; <see langword="false"/> when the item is not held with the
+    /// claim's fence, and nothing was written.
     /// </returns>
     /// <remarks>
     /// A dead item is kept for the queue's retention; a dead log or run item no longer holds its key. A coalescing item
@@ -181,8 +181,8 @@ public interface IWorkStore
     /// <param name="claim">The claim of the item.</param>
     /// <param name="cancellationToken">Ends the wait for the database, as the remarks of <see cref="IWorkStore"/> say.</param>
     /// <returns>
-    /// <see langword="true"/> when the item was released; <see langword="false"/> when the claim's fence is not the
-    /// item's current one, and nothing was written.
+    /// <see langword="true"/> when the item was released; <see langword="false"/> when the item is not held with the
+    /// claim's fence, and nothing was written.
     /// </returns>
     /// <remarks>
     /// The item is due at the database's now, with the attempts it had before the claim, because the stop, not the

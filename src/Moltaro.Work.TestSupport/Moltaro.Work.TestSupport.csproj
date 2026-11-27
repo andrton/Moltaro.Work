@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Code that more than one test project needs. Never shipped, and no test project: it runs no tests of its own. The
+    conformance suite in its folder Conformance runs only in the classes each provider's test project derives from it.
+  -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Moltaro.Work\Moltaro.Work.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The attributes of the tests, without a runner. -->
+    <PackageReference Include="xunit.v3.extensibility.core" />
+  </ItemGroup>
+
+</Project>

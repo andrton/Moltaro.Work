@@ -1,11 +1,11 @@
 using System.Data;
 using System.Data.Common;
 
-namespace Moltaro.Work.Tests.Doubles;
+namespace Moltaro.Work.TestSupport.Doubles;
 
-// The caller's connection in every area of these tests. It touches no database: the core only hands it to the store,
-// so every member throws.
-internal sealed class FakeDbConnection : DbConnection
+// A connection that touches no database, so every member throws: the caller's connection in the tests of the core,
+// which only hands it to the store, and the connection of FakeDbDataSource, whose type a provider refuses.
+public sealed class FakeDbConnection : DbConnection
 {
     [System.Diagnostics.CodeAnalysis.AllowNull]
     public override string ConnectionString
@@ -49,6 +49,6 @@ internal sealed class FakeDbConnection : DbConnection
 
     private static InvalidOperationException Untouched()
     {
-        return new InvalidOperationException("The core does not use the caller's connection itself.");
+        return new InvalidOperationException("This connection of the tests touches no database.");
     }
 }
