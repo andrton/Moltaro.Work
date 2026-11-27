@@ -300,11 +300,13 @@ public sealed class EnqueueTests : IAsyncDisposable
         CallCommit();
     }
 
-    // CommitAsync is not implemented yet, but its call counts. Getting as far as NotSupportedException shows that its
-    // checks passed.
+    // A call with a token that is already cancelled passes the checks of CommitAsync and counts, and gives a cancelled
+    // task in every stage: the cancelled task shows that its checks passed.
     private void CallCommit()
     {
-        Assert.Throws<NotSupportedException>(() => { _ = _transaction.CommitAsync(TestContext.Current.CancellationToken); });
+        Task commit = _transaction.CommitAsync(Cancelled);
+
+        Assert.True(commit.IsCanceled);
     }
 
     private async Task FailOneEnqueueAsync(bool cancelled)

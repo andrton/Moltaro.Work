@@ -72,7 +72,8 @@ public sealed class WorkWorkerTests : IAsyncDisposable
     public void A_second_run_is_refused()
     {
         var worker = new WorkWorker(_client, Balances, new CompletingHandler());
-        Assert.Throws<NotSupportedException>(() => { _ = worker.RunAsync(TestContext.Current.CancellationToken); });
+        Task first = worker.RunAsync(new CancellationToken(canceled: true));
+        Assert.True(first.IsCanceled);
 
         Assert.Throws<InvalidOperationException>(() => { _ = worker.RunAsync(TestContext.Current.CancellationToken); });
     }

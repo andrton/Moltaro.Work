@@ -153,11 +153,11 @@ public sealed class WorkTransaction
         if (scope is not null)
         {
             WorkChecks.CheckKeyOrScope(scope, nameof(scope));
-        }
 
-        if (scope is not null && !queue.Scoped)
-        {
-            throw new ArgumentException($"The queue {queue.Name} is not scoped: its items carry no scope.", nameof(scope));
+            if (!queue.Scoped)
+            {
+                throw new ArgumentException($"The queue {queue.Name} is not scoped: its items carry no scope.", nameof(scope));
+            }
         }
 
         if (payload is not null)

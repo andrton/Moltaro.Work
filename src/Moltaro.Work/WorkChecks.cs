@@ -1,12 +1,13 @@
 namespace Moltaro.Work;
 
-// The rules of names, keys, scopes, payloads and options that several public members share, so that each rule lives
-// once. Each check reports the ParamName it is given.
+// The rules that several public members share, so that each rule lives once. The schemas of the providers rely on the
+// rules of names, keys, scopes and payloads: their column lengths, their binary collations and their text without
+// U+0000. The queue and the worker share the checks of options. Each check reports the ParamName it is given.
 internal static class WorkChecks
 {
-    internal const int MaxQueueNameLength = 100;
+    private const int MaxQueueNameLength = 100;
 
-    internal const int MaxKeyLength = 200;
+    private const int MaxKeyLength = 200;
 
     // The longest TimeSpan of a queue's options.
     internal static readonly TimeSpan LongestQueueTime = TimeSpan.FromDays(3650);
