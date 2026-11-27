@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 216" width="840" height="216" role="img" aria-labelledby="log-title log-desc">
   <title id="log-title">Log: one item per enqueue</title>
-  <desc id="log-desc">Three enqueues, mail for order 17, webhook for order 18 and mail for order 19, become three items. Each item waits, runs once and is deleted after its run.</desc>
+  <desc id="log-desc">Three enqueues, mail for order 17, webhook for order 18 and mail for order 19, become three items. Each item waits, runs and is deleted after its run.</desc>
   <style>
     text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; font-size: 16px; fill: #1f2328; }
     .h { font-size: 20px; font-weight: 600; }

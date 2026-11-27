@@ -83,7 +83,7 @@ Every event must be handled, so every event becomes its own item.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/log-dark.svg">
-  <img alt="Log: three enqueues, mail for order 17, webhook for order 18 and mail for order 19, become three items; each waits, runs once and is deleted after its run." src="docs/images/log-light.svg">
+  <img alt="Log: three enqueues, mail for order 17, webhook for order 18 and mail for order 19, become three items; each waits, runs and is deleted after its run." src="docs/images/log-light.svg">
 </picture>
 
 - **After success** the item is deleted.
@@ -100,7 +100,7 @@ of file X: enqueued 10:00, 2 attempts, finished 10:03".
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/run-dark.svg">
-  <img alt="Run with the optional key nightly-import: an enqueue waits and runs; a second enqueue with the same key while the first is active adds nothing; after success the item is kept with its outcome, succeeded, enqueued 10:00, finished 10:03, for the queue's retention." src="docs/images/run-light.svg">
+  <img alt="Run with the optional key nightly-import: an enqueue creates an item, which waits and then runs; a second enqueue with the same key while the item is active adds nothing; after success the item is kept with its outcome, completed, enqueued 10:00, finished 10:03, for the queue's retention." src="docs/images/run-light.svg">
 </picture>
 
 - **An optional key** keeps two runs with that key from being active at once. With the key

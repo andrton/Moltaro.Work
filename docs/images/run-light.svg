@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 196" width="840" height="196" role="img" aria-labelledby="run-title run-desc">
   <title id="run-title">Run: kept with its outcome</title>
-  <desc id="run-desc">The optional key nightly-import. An enqueue makes an item, which waits and then runs. A second enqueue with the same key while the first is active adds nothing. After success the item is kept with its outcome, succeeded, enqueued 10:00, finished 10:03, for the queue's retention.</desc>
+  <desc id="run-desc">The optional key nightly-import. An enqueue creates an item, which waits and then runs. A second enqueue with the same key while the item is active adds nothing. After success the item is kept with its outcome, completed, enqueued 10:00, finished 10:03, for the queue's retention.</desc>
   <style>
     text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; font-size: 16px; fill: #1f2328; }
     .h { font-size: 20px; font-weight: 600; }
@@ -24,19 +24,19 @@
   </style>
   <text class="h" x="0" y="24">Run</text>
   <text class="m e" x="840" y="24">optional key <tspan class="k">nightly-import</tspan></text>
-  <line class="line" x1="1" y1="136" x2="428" y2="136"/>
-  <text class="m c" x="40" y="62">enqueue</text>
-  <circle class="enq" cx="40" cy="82" r="6"/>
-  <line class="arr" x1="40" y1="88" x2="40" y2="105"/>
-  <polygon class="enq" points="35,104 45,104 40,113"/>
-  <text class="m c" x="300" y="62">same key: adds nothing</text>
-  <circle class="none" cx="300" cy="82" r="6"/>
-  <line class="stop" x1="300" y1="90" x2="300" y2="111"/>
-  <rect class="wait" x="1" y="114" width="149" height="44" rx="8"/>
-  <text class="c" x="75.5" y="141">waits</text>
-  <rect class="run" x="162" y="114" width="230" height="44" rx="8"/>
-  <text class="rt c" x="277" y="141">run</text>
-  <rect class="card" x="428" y="114" width="410" height="44" rx="8"/>
-  <text class="c" x="633" y="141"><tspan class="ok">succeeded</tspan> · enqueued 10:00 · finished 10:03</text>
-  <text class="m c" x="633" y="182">after success: kept for the queue's retention</text>
+  <line class="line" x1="76" y1="136" x2="440" y2="136"/>
+  <text x="0" y="141">enqueue</text>
+  <circle class="enq" cx="76" cy="136" r="6"/>
+  <line class="arr" x1="82" y1="136" x2="93" y2="136"/>
+  <polygon class="enq" points="92,131 92,141 101,136"/>
+  <text class="m c" x="323" y="62">same key: adds nothing</text>
+  <circle class="none" cx="323" cy="82" r="6"/>
+  <line class="stop" x1="323" y1="90" x2="323" y2="111"/>
+  <rect class="wait" x="102" y="114" width="116" height="44" rx="8"/>
+  <text class="c" x="160" y="141">waits</text>
+  <rect class="run" x="228" y="114" width="190" height="44" rx="8"/>
+  <text class="rt c" x="323" y="141">run</text>
+  <rect class="card" x="440" y="114" width="398" height="44" rx="8"/>
+  <text class="c" x="639" y="141"><tspan class="ok">completed</tspan> · enqueued 10:00 · finished 10:03</text>
+  <text class="m c" x="639" y="182">after success: kept for the queue's retention</text>
 </svg>

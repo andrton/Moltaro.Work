@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 232" width="840" height="232" role="img" aria-labelledby="coalescing-title coalescing-desc">
   <title id="coalescing-title">Coalescing: one item per key</title>
-  <desc id="coalescing-desc">The key invoice-42. Three enqueues while the item waits leave that one item, which runs. Two enqueues during the run add one mark, run once more, so exactly one more run follows, and then the item is deleted. The enqueues during a run cost one more run, not one per enqueue.</desc>
+  <desc id="coalescing-desc">The key invoice-42. Three enqueues while the item waits leave that one item, which runs. Two enqueues during the run add one mark, so exactly one more run follows, and then the item is deleted. The enqueues during a run cost one more run, not one per enqueue.</desc>
   <style>
     text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; font-size: 16px; fill: #f0f6fc; }
     .h { font-size: 20px; font-weight: 600; }
