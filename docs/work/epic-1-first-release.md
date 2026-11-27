@@ -370,7 +370,7 @@ tested in `Moltaro.Work.Tests`; "conformance" is the suite on each real database
 
 | Rule | Held by | Sprint |
 | --- | --- | --- |
-| 1. Enqueue is transactional | Conformance: a rolled-back enqueue leaves nothing; a committed one is claimable | S5 |
+| 1. Enqueue is transactional | Conformance: after a rolled-back enqueue the same key is added again (`Added`), after a committed one it coalesces (`Coalesced`); claims: a committed item is claimable | S5, S6 |
 | 2. New work wakes a worker | Conformance, worker: a commit starts the handler without moving any clock | S7 |
 | 3. Waiting is bounded without polling | Policy: the wait is the shorter of the next due time and the idle bound; conformance, worker: no statement while idle, none for a locked due row (W7), two workers share a burst (W16) | S7 |
 | 4. A claim is exclusive | Conformance: many claimers at once never return one item twice | S6 |
@@ -1313,8 +1313,8 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
   process, and completed only by its current holder.
 - **Contract.** `ClaimAsync` for an unscoped queue, `HeartbeatAsync`, and `CompleteAsync`
   for a coalescing item.
-- **Acceptance.** Conformance, area `Claims`: many claimers at once never return one item
-  twice and together return all; a claim returns at most `count`; an item due later by the
+- **Acceptance.** Conformance, area `Claims`: a committed item is claimable (rule 1); many
+  claimers at once never return one item twice and together return all; a claim returns at most `count`; an item due later by the
   database's clock is claimed only once that clock is moved; an enqueue while waiting moves
   the due time earlier, unless the item waits for a retry (PQ8), and one while held makes
   the item run once more after its completion; an item whose holder died is claimed by
@@ -1349,7 +1349,7 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
   If one agent and one review cannot carry S7, the stage's contract splits it:
   the decision component with the waking, then the lanes with heartbeats and stop.
 - **Acceptance.** Policy tests of the wait and of lease loss at their edges. Conformance,
-  area `Worker`, with an in-process `SignalHost` and one `FakeTimeProvider` for host and
+  area `Worker`, whose class S2 left empty and S7 fills, with an in-process `SignalHost` and one `FakeTimeProvider` for host and
   client, which `LoopbackSignalHost` takes as a parameter: a commit starts the handler
   without moving a clock; an item due in 30 seconds starts once both clocks moved; an idle
   worker sends no statement before its idle bound and
