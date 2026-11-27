@@ -5,7 +5,7 @@ delivered over several sprints.
 
 | Epic | Result | Status |
 | --- | --- | --- |
-| 1. First release | The library as the [concept](../concept.md) describes it: the core, the PostgreSQL, SQL Server and MySQL providers and the hosting package, published on nuget.org as version 0.1.0 | Planned in [epic-1-first-release.md](epic-1-first-release.md), waiting for the owner's approval of the plan and of the contract of its first stage, the public .NET contract. No sprint has started |
+| 1. First release | The library as the [concept](../concept.md) describes it: the core, the PostgreSQL, SQL Server and MySQL providers and the hosting package, published on nuget.org as version 0.1.0 | In progress, by the plan in [epic-1-first-release.md](epic-1-first-release.md), which the owner approved on 27 November 2026 with the contract of its first stage |
 
 ## The repository as it is set up
 

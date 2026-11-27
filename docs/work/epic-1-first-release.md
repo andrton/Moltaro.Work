@@ -1,7 +1,7 @@
 # Epic 1: First release
 
-**Status:** planned, 27 November 2026; waiting for the owner's approval of this plan and,
-with it, of the contract of Stage 1. No sprint has started.
+**Status:** approved by the owner on 27 November 2026, with the contract of Stage 1; S1 in
+progress.
 
 ## Standing permission
 
@@ -143,6 +143,10 @@ here for the owner, with the sprint and the reason. None yet.
 
 Each question changes a guarantee, a decision or a rule, so it is the owner's. The contract
 of Stage 1 is written with the recommended answer; another answer changes the brief named.
+
+**Answered.** The owner took every recommended answer on 27 November 2026, by merging this
+plan: PQ1 (a), PQ2 (a), PQ3 (a) with the wording it gives, PQ4 (a), PQ5 (a) with the
+acceptance of the SQL Server licence, PQ6 (a), PQ7 (b) and PQ8 (b).
 
 ### PQ1. What an enqueue does to a dead coalescing item
 
@@ -436,7 +440,7 @@ two more databases against a finished conformance suite.
 
 | Sprint | Result | Track | Status |
 | --- | --- | --- | --- |
-| S1 | The core contract and the test lane | Full | Not started |
+| S1 | The core contract and the test lane | Full | In progress |
 | S2 | The PostgreSQL provider contract and schema | Full | Not started |
 | S3 | The SQL Server and MySQL provider contracts and schemas | Full | Not started |
 | S4 | The hosting contract and the samples | Full | Not started |
