@@ -1042,10 +1042,15 @@ Opus 5.5, `xhigh` · **Needs:** S2.
   in CI; `docs/storage.md` covers them.
 - **Projects.** Both packed, as S2's, referencing `Moltaro.Work` and
   `Microsoft.Data.SqlClient` or `MySqlConnector`; `Moltaro.Work.SqlServer.Tests` and
-  `Moltaro.Work.MySql.Tests` as S2's. The `build` job and the job of Publish gain the
-  service containers `mcr.microsoft.com/mssql/server:2019-latest` and `mysql:8.4`, with
-  their variables; the SQL Server test project turns READ_COMMITTED_SNAPSHOT on in the
-  database it creates.
+  `Moltaro.Work.MySql.Tests` as S2's. The `build` job gains the service containers
+  `mcr.microsoft.com/mssql/server:2019-latest` and `mysql:8.4`, with their variables; the
+  SQL Server test project turns READ_COMMITTED_SNAPSHOT on in the database it creates.
+  `ci.yml` gains `on: workflow_call`, and `publish.yml` runs it as its first job instead of
+  services of its own: its `publish` job needs every job of `ci.yml` to pass on the tag's
+  commit, refuses a tag not on `main` before it builds, then packs and pushes, and alone
+  holds `id-token: write` and the sign-in, so that the Trusted Publishing policy of
+  `publish.yml` still applies. X1 of the exceptions narrows to `ci.yml`. The new form
+  first runs at the release (S18).
 - **Contract.**
 
   ```csharp
@@ -1205,7 +1210,15 @@ Opus 5.5, `xhigh` · **Needs:** S2.
 - **Acceptance.** For each of the two, as S2's: the script applies and records 1, the
   constructor's checks, the references (`Microsoft.Data.SqlClient` or `MySqlConnector`),
   and the suite's areas derived and skipped. Every test of the three provider projects runs
-  in the `build` job.
+  in the `build` job. Conformance, area `Enqueue`, not skipped because each store checks
+  it from its contract on: an enqueue on a transaction of another database is refused by
+  the call with `ArgumentException` (`transaction`); `FakeDbTransaction` moves to the
+  `Doubles` of TestSupport for it.
+- **Documents**, from the architect's review after S2: `README.md` "Status" alone says what
+  exists, and `AGENTS.md` keeps only its pointer to it; `docs/work/README.md` points to
+  `src/Moltaro.Work.slnx` for the projects; `docs/storage.md` and `docs/README.md` call
+  what is not built planned, without sprint numbers; "Layout" of `AGENTS.md` gains its
+  missing `Moltaro.Work.TestSupport` row.
 - **Out of scope.** Any SQL besides the scripts and the test projects' clock statements.
 
 ### S4 · The hosting contract and the samples
@@ -1274,7 +1287,11 @@ Opus 5.5, `xhigh` · **Needs:** S2.
   `AddWork`; a worker's handler runs in a scope of its own per item; a worker stops with
   the application after its handlers ended; a second worker of one queue is refused; the
   two log lines. The samples that [Rules for every sprint](#rules-for-every-sprint),
-  "Samples", gives to S4 are written and stop where they refuse.
+  "Samples", gives to S4 are written and stop where they refuse. 02 applies the schema, and
+  the later samples rely on the order of `Program.cs` instead of applying it again; 05 to
+  07 run in the frame of 03, a signal host, a client and a worker without a host, which
+  `03-Worker` offers once; each sample uses queue names of its own, because all of them
+  share one database across runs.
 - **Out of scope.** Any behavior beyond the checks; overloads that bind options from
   configuration; health checks.
 
@@ -1293,7 +1310,8 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
   `docs/storage.md`, W3 and W10 say; `WorkTransaction.CommitAsync`. `Join` hands
   `WorkTransaction` the client, as `WorkWorker` gets it, and W11 is spelled once: an
   internal signal key that `WorkQueue` computes once, and one internal constant for the
-  group.
+  group. The store's check of the transaction's connection stays outside the async body of
+  `EnqueueAsync`, so that it is thrown by the call, as S3's conformance case states.
 - **Acceptance.** Conformance, area `Enqueue`: a second enqueue of a committed key reports
   `Coalesced` with the first's id, and after a rollback `Added`; two transactions that
   enqueue one key at once leave one item: at REPEATABLE READ the second either fails with
