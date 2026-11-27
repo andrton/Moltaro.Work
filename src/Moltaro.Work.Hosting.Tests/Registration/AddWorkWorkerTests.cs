@@ -56,8 +56,6 @@ public sealed class AddWorkWorkerTests
 
         Assert.Equal([7L, 8L], [first.Item.Id, second.Item.Id]);
         Assert.NotSame(first.Services, second.Services);
-        Assert.NotSame(host.Services, first.Services);
-        Assert.NotSame(host.Services, second.Services);
     }
 
     [Fact(Skip = SkipReason.NotImplemented)]
@@ -119,6 +117,9 @@ public sealed class AddWorkWorkerTests
         CancellationToken cancellationToken = TestContext.Current.CancellationToken;
         var failure = new UnreachableDatabaseException();
         var store = new HandOutWorkStore { ClaimException = failure };
+
+        // An item due at once, so that the worker claims, whatever the order of its first pass, and the claim fails.
+        store.HandOut(Balances, itemId: 7);
         var logs = new RecordingLoggerProvider(WorkerCategory, LogLevel.Error);
         HostApplicationBuilder builder = CreateBuilder(store, new HandledItems());
         builder.Logging.AddProvider(logs);

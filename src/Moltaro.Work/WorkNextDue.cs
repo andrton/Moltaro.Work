@@ -14,6 +14,6 @@ namespace Moltaro.Work;
 /// </param>
 /// <remarks>
 /// Each value is a duration, not an instant, so that no two clocks are compared: the worker adds the shorter one,
-/// bounded by its idle bound, to the now of its own clock to find the deadline of its wait.
+/// bounded by its idle bound, to the now of its client's clock to find the deadline of its wait.
 /// </remarks>
 public readonly record struct WorkNextDue(TimeSpan? UntilClaimable, TimeSpan? UntilExpired);
