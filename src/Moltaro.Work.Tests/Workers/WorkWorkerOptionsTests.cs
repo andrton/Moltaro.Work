@@ -58,7 +58,6 @@ public sealed class WorkWorkerOptionsTests : IAsyncDisposable
         Assert.Equal(TimeSpan.FromMinutes(1), options.IdleBound);
         Assert.Equal(TimeSpan.FromSeconds(5), options.FailureDelay);
         Assert.Equal(1000, options.RetentionBatchSize);
-        Assert.Same(TimeProvider.System, options.TimeProvider);
     }
 
     [Fact]
@@ -188,14 +187,6 @@ public sealed class WorkWorkerOptionsTests : IAsyncDisposable
     public void A_retention_batch_size_of_1_to_100000_is_accepted(int retentionBatchSize)
     {
         CreateWorker(new WorkWorkerOptions { RetentionBatchSize = retentionBatchSize });
-    }
-
-    [Fact]
-    public void A_null_time_provider_is_refused()
-    {
-        var options = new WorkWorkerOptions { TimeProvider = null! };
-
-        Assert.Throws<ArgumentException>(nameof(WorkWorkerOptions.TimeProvider), () => CreateWorker(options));
     }
 
     private WorkWorker CreateWorker(WorkWorkerOptions options)

@@ -6,10 +6,10 @@ namespace Moltaro.Work;
 /// </summary>
 /// <remarks>
 /// <para>
-/// A worker is created over the application's <see cref="WorkClient"/>, whose store it uses and whose
-/// <see cref="Moltaro.Signals.ISignals"/> wakes it. Several workers of one queue, in one process or in many, share its
-/// items: a claim is exclusive, and every write of a holder is fenced, so that a holder whose lease was reclaimed
-/// cannot complete the item.
+/// A worker is created over the application's <see cref="WorkClient"/>, whose store it uses, whose
+/// <see cref="Moltaro.Signals.ISignals"/> wakes it and whose clock its own timers use. Several workers of one queue,
+/// in one process or in many, share its items: a claim is exclusive, and every write of a holder is fenced, so that a
+/// holder whose lease was reclaimed cannot complete the item.
 /// </para>
 /// <para>
 /// Every member may be called from any thread at any time, except that <see cref="RunAsync"/> runs once.
@@ -32,8 +32,6 @@ public sealed class WorkWorker
     private readonly TimeSpan _failureDelay;
 
     private readonly int _retentionBatchSize;
-
-    private readonly TimeProvider _timeProvider;
 
     // 1 once RunAsync was called; changed only by Interlocked, so that two calls at once cannot both run.
     private int _runCalled;
@@ -58,9 +56,7 @@ public sealed class WorkWorker
     /// </exception>
     /// <exception cref="ArgumentException">
     /// <see cref="WorkWorkerOptions.HeartbeatInterval"/> is above half of <see cref="WorkWorkerOptions.LeaseDuration"/>,
-    /// with the <see cref="ArgumentException.ParamName"/> <c>HeartbeatInterval</c>; or
-    /// <see cref="WorkWorkerOptions.TimeProvider"/> is <see langword="null"/>, with the
-    /// <see cref="ArgumentException.ParamName"/> <c>TimeProvider</c>.
+    /// with the <see cref="ArgumentException.ParamName"/> <c>HeartbeatInterval</c>.
     /// </exception>
     public WorkWorker(WorkClient client, WorkQueue queue, IWorkHandler handler, WorkWorkerOptions? options = null)
     {
@@ -76,7 +72,6 @@ public sealed class WorkWorker
         TimeSpan idleBound = options.IdleBound;
         TimeSpan failureDelay = options.FailureDelay;
         int retentionBatchSize = options.RetentionBatchSize;
-        TimeProvider? timeProvider = options.TimeProvider;
 
         WorkChecks.CheckRange(lanes, 1, 1000, nameof(WorkWorkerOptions.Lanes));
         WorkChecks.CheckTimeSpan(leaseDuration, WorkChecks.LongestTimer, nameof(WorkWorkerOptions.LeaseDuration));
@@ -93,11 +88,6 @@ public sealed class WorkWorker
                 nameof(WorkWorkerOptions.HeartbeatInterval));
         }
 
-        if (timeProvider is null)
-        {
-            throw new ArgumentException("The time provider is required.", nameof(WorkWorkerOptions.TimeProvider));
-        }
-
         _client = client;
         _handler = handler;
         _lanes = lanes;
@@ -106,7 +96,6 @@ public sealed class WorkWorker
         _idleBound = idleBound;
         _failureDelay = failureDelay;
         _retentionBatchSize = retentionBatchSize;
-        _timeProvider = timeProvider;
         Queue = queue;
     }
 
