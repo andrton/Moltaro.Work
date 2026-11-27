@@ -10,8 +10,8 @@ namespace Moltaro.Work.Samples.Worker;
 // sent, then the worker stops. RunWorkerAsync is the frame of it, which the samples 05 to 07 run in as well.
 internal static class WorkerWithoutHost
 {
-    // The longest the work of a sample may take while its worker runs: far more than it needs, so that a sample whose
-    // handler never reports ends with an error instead of hanging.
+    // The longest the work of a sample may take while its worker runs: far more than it needs, so that a sample never
+    // hangs.
     private static readonly TimeSpan WorkDeadline = TimeSpan.FromSeconds(30);
 
     public static async Task RunAsync(string connectionString, CancellationToken cancellationToken)
@@ -52,8 +52,7 @@ internal static class WorkerWithoutHost
 
     // The frame of a worker without a host. It creates what an application creates once at its start, runs one worker
     // of the queue while whileRunning does what the application does, and then stops the worker as the application
-    // does when it ends: the worker cancels its running handlers, waits for them and writes their outcomes. The token
-    // that whileRunning gets ends its waits at WorkDeadline, and at once if the worker ends before its work is done.
+    // does when it ends: the worker cancels its running handlers, waits for them and writes their outcomes.
     public static async Task RunWorkerAsync(
         NpgsqlDataSource dataSource,
         WorkQueue queue,
@@ -86,37 +85,21 @@ internal static class WorkerWithoutHost
 
         Console.WriteLine($"The worker of {queue.Name} runs.");
 
-        using var workEnds = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        workEnds.CancelAfter(WorkDeadline);
-
-        Task work = whileRunning(client, workEnds.Token);
+        // Every wait of the work ends at the deadline.
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(WorkDeadline);
 
         try
         {
-            // A worker that ends early, with an error, ends the work too, and its error is the one reported.
-            if (await Task.WhenAny(work, run) == run)
-            {
-                await workEnds.CancelAsync();
-            }
-
-            await work;
-        }
-        catch (OperationCanceledException) when (DeadlinePassed())
-        {
-            throw new TimeoutException($"The work with the worker of {queue.Name} did not end within {WorkDeadline}.");
+            await whileRunning(client, deadline.Token);
         }
         finally
         {
+            // A worker that ended early reports its own error here.
             await stop.CancelAsync();
             await run;
         }
 
         Console.WriteLine($"The worker of {queue.Name} stopped.");
-
-        // The work was ended by WorkDeadline: neither by the caller nor because the worker ended.
-        bool DeadlinePassed()
-        {
-            return workEnds.IsCancellationRequested && !cancellationToken.IsCancellationRequested && !run.IsCompleted;
-        }
     }
 }
