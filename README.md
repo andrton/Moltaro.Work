@@ -2,7 +2,7 @@
 
 Durable background work for .NET on PostgreSQL, SQL Server and MySQL: enqueue in your own
 transaction, coalesce work per key, claim with leases and fencing, retry with backoff and
-dead letters, clean up by retention, wake at once with
+dead items, clean up by retention, wake at once with
 [Moltaro.Signals](https://github.com/andrton/Moltaro.Signals).
 
 ## Status
@@ -22,7 +22,7 @@ same transaction as the write that creates them, and writes a handler. The libra
 rest:
 
 - an item exists if and only if the business write commits;
-- items come in three shapes:
+- items come in [three shapes](#the-three-shapes):
   - coalescing: one item per key, however often it is enqueued;
   - log: every item counts;
   - run: kept with its outcome for its history;
@@ -36,6 +36,71 @@ rest:
 It is not a message broker, a scheduler of cron expressions, a workflow engine or a
 dashboard. See the [concept](docs/concept.md#7-non-goals-and-possible-later-work) for the
 full list of non-goals.
+
+## The three shapes
+
+Every queue has one of three shapes. All three share one mechanism: retries with a backoff,
+dead items, leases and retention. They differ in what an item means, what a second enqueue
+does, and what remains after success.
+
+![Three timelines. Coalescing: many enqueues of one key become one item and one run; enqueues during the run mark it for exactly one more run, then it is deleted. Log: three enqueues become three items, three runs, each deleted. Run: a second enqueue with the same key while the first is active adds nothing; after success the run is kept with its outcome.](docs/images/shapes.svg)
+
+### Coalescing: "this object needs attention"
+
+A coalescing queue holds one item per key, and the key names an object of the application.
+The item carries no payload: its handler reads the object's current state.
+
+For example, the key `invoice-42` means "recompute the totals of invoice 42". Ten changes of
+the invoice in one second leave one item, and the handler runs once, on the latest state.
+
+- **An enqueue while the item waits** adds nothing, and the item's due time becomes the
+  earlier of the two. The exception is an item that waits for a retry: it keeps its due
+  time, so that its backoff holds.
+- **An enqueue while the handler runs** marks the item to run once more after the current
+  run, because the handler may have read the state before that change. Any number of
+  changes during a run costs exactly one more run, and none is lost.
+- **After success** the item is deleted.
+- **A dead item** is revived by the next enqueue, with its attempts counted from zero. After
+  a fix, the next change of the object processes it again.
+
+### Log: "here is an event, handle each one"
+
+A log queue holds one item per enqueue, with a payload that the application serializes.
+For example: "send the confirmation mail of order 17", "notify the webhook of order 18".
+Every event must be handled, so nothing coalesces.
+
+- **After success** the item is deleted.
+- **An optional key** guards against duplicates: while an item with that key is active,
+  waiting or running, an enqueue with the same key adds nothing. A business transaction
+  that is retried while its first mail still waits then does not send the mail twice.
+
+### Run: "an operation whose history matters"
+
+A run queue holds, like a log, one item per enqueue, with a payload. The difference is what
+remains: after success a run is kept, with its status, attempts, times and last error, for
+the queue's retention, so that an application can show its history. For example: "import
+of file X: started 10:00, 2 attempts, finished 10:03".
+
+- **An optional key** keeps two runs with that key from being active at once. With the key
+  `nightly-import`, a second import cannot start while one waits or runs; once that run
+  ends, the key is free again.
+
+### Side by side
+
+| | Coalescing | Log | Run |
+| --- | --- | --- | --- |
+| **What an item means** | An object that needs attention | An event to handle | An operation whose history matters |
+| **Payload** | None; the handler reads the current state | Yes | Yes |
+| **A second enqueue while the first waits** | Adds nothing; the due time becomes the earlier of the two | A new item; with a key, nothing | A new item; with a key, nothing |
+| **An enqueue while the handler runs** | Exactly one more run after this one | A new item; with a key, nothing | A new item; with a key, nothing |
+| **After success** | Deleted | Deleted | Kept with its outcome for the queue's retention |
+
+### Which one to choose
+
+- To bring an object to its current state, when the changes in between do not matter:
+  **coalescing**.
+- When every event must be handled and no history is needed: **log**.
+- When someone needs to see what ran and how it ended: **run**.
 
 ## Packages (planned)
 
