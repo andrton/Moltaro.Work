@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 216" width="840" height="216" role="img" aria-labelledby="log-title log-desc">
+  <title id="log-title">Log: one item per enqueue</title>
+  <desc id="log-desc">Three enqueues, mail for order 17, webhook for order 18 and mail for order 19, become three items. Each item waits, runs and is deleted after its run.</desc>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; font-size: 16px; fill: #1f2328; }
+    .h { font-size: 20px; font-weight: 600; }
+    .m { font-size: 15px; fill: #59636e; }
+    .k { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; fill: #1f2328; }
+    .c { text-anchor: middle; }
+    .e { text-anchor: end; }
+    .line { stroke: #d1d9e0; stroke-width: 2; }
+    .wait { fill: #ddf4ff; stroke: #0969da; stroke-width: 1.5; stroke-dasharray: 6 4; }
+    .run { fill: #dafbe1; stroke: #1a7f37; stroke-width: 1.5; }
+    .rt { fill: #116329; font-weight: 600; }
+    .enq { fill: #0969da; }
+    .arr { stroke: #0969da; stroke-width: 2; }
+    .none { fill: none; stroke: #59636e; stroke-width: 2; }
+    .stop { stroke: #59636e; stroke-width: 2; stroke-dasharray: 3 3; }
+    .mark { fill: #bf8700; }
+    .mt { font-size: 15px; font-weight: 600; fill: #9a6700; }
+    .del { fill: none; stroke: #59636e; stroke-width: 2; }
+    .card { fill: #f6f8fa; stroke: #d1d9e0; stroke-width: 1.5; }
+    .ok { fill: #116329; font-weight: 600; }
+  </style>
+  <text class="h" x="0" y="24">Log</text>
+  <text class="m e" x="840" y="24">one item per enqueue</text>
+  <line class="line" x1="200" y1="74" x2="528" y2="74"/>
+  <text class="e" x="184" y="79">mail, order 17</text>
+  <circle class="enq" cx="200" cy="74" r="6"/>
+  <line class="arr" x1="206" y1="74" x2="217" y2="74"/>
+  <polygon class="enq" points="216,69 216,79 225,74"/>
+  <rect class="wait" x="226" y="52" width="120" height="44" rx="8"/>
+  <text class="c" x="286" y="79">waits</text>
+  <rect class="run" x="354" y="52" width="160" height="44" rx="8"/>
+  <text class="rt c" x="434" y="79">run</text>
+  <circle class="del" cx="541" cy="74" r="13"/>
+  <path class="del" d="M536 69L546 79M546 69L536 79"/>
+  <text x="562" y="79">deleted</text>
+  <line class="line" x1="264" y1="130" x2="592" y2="130"/>
+  <text class="e" x="248" y="135">webhook, order 18</text>
+  <circle class="enq" cx="264" cy="130" r="6"/>
+  <line class="arr" x1="270" y1="130" x2="281" y2="130"/>
+  <polygon class="enq" points="280,125 280,135 289,130"/>
+  <rect class="wait" x="290" y="108" width="120" height="44" rx="8"/>
+  <text class="c" x="350" y="135">waits</text>
+  <rect class="run" x="418" y="108" width="160" height="44" rx="8"/>
+  <text class="rt c" x="498" y="135">run</text>
+  <circle class="del" cx="605" cy="130" r="13"/>
+  <path class="del" d="M600 125L610 135M610 125L600 135"/>
+  <text x="626" y="135">deleted</text>
+  <line class="line" x1="328" y1="186" x2="656" y2="186"/>
+  <text class="e" x="312" y="191">mail, order 19</text>
+  <circle class="enq" cx="328" cy="186" r="6"/>
+  <line class="arr" x1="334" y1="186" x2="345" y2="186"/>
+  <polygon class="enq" points="344,181 344,191 353,186"/>
+  <rect class="wait" x="354" y="164" width="120" height="44" rx="8"/>
+  <text class="c" x="414" y="191">waits</text>
+  <rect class="run" x="482" y="164" width="160" height="44" rx="8"/>
+  <text class="rt c" x="562" y="191">run</text>
+  <circle class="del" cx="669" cy="186" r="13"/>
+  <path class="del" d="M664 181L674 191M674 181L664 191"/>
+  <text x="690" y="191">deleted</text>
+</svg>

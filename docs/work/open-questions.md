@@ -76,6 +76,15 @@ An entry is numbered `Q1`, `Q2`, … and keeps its number for good:
 | **Until answered** | The documentation of `WorkWorker` names both rules and not the case where they meet. S7, which implements `RunAsync`, does not start before the answer |
 | **Decides** | The planner, with the contract of Stage 2 |
 
+### Q9. The README that the packages carry
+
+| | |
+| --- | --- |
+| **Found** | 27 November 2026, in the review of the diagrams of the three shapes |
+| **Question** | Every package carries `README.md` as its package README. The README shows its diagrams through GitHub's `<picture>` element, by the owner's choice, but nuget.org renders Markdown only, with inline HTML disabled, so the package pages would show the tags as text. Do the packages get a short README of their own, without the diagrams, or is the README changed in another way before the first release? |
+| **Until answered** | Nothing is published, so nothing shows. S18, the release of 0.1.0, does not start before the answer |
+| **Decides** | The planner, with S18's brief, and it reports to the owner |
+
 ## Answered
 
 ### Q4. A cancellation that the SQL Server driver reports as its own error
