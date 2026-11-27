@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 196" width="840" height="196" role="img" aria-labelledby="run-title run-desc">
+  <title id="run-title">Run: kept with its outcome</title>
+  <desc id="run-desc">The optional key nightly-import. An enqueue makes an item, which waits and then runs. A second enqueue with the same key while the first is active adds nothing. After success the item is kept with its outcome, succeeded, enqueued 10:00, finished 10:03, for the queue's retention.</desc>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; font-size: 16px; fill: #f0f6fc; }
+    .h { font-size: 20px; font-weight: 600; }
+    .m { font-size: 15px; fill: #9198a1; }
+    .k { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; fill: #f0f6fc; }
+    .c { text-anchor: middle; }
+    .e { text-anchor: end; }
+    .line { stroke: #3d444d; stroke-width: 2; }
+    .wait { fill: #132339; stroke: #4493f8; stroke-width: 1.5; stroke-dasharray: 6 4; }
+    .run { fill: #12301c; stroke: #3fb950; stroke-width: 1.5; }
+    .rt { fill: #7ee787; font-weight: 600; }
+    .enq { fill: #4493f8; }
+    .arr { stroke: #4493f8; stroke-width: 2; }
+    .none { fill: none; stroke: #9198a1; stroke-width: 2; }
+    .stop { stroke: #9198a1; stroke-width: 2; stroke-dasharray: 3 3; }
+    .mark { fill: #d29922; }
+    .mt { font-size: 15px; font-weight: 600; fill: #d29922; }
+    .del { fill: none; stroke: #9198a1; stroke-width: 2; }
+    .card { fill: #151b23; stroke: #3d444d; stroke-width: 1.5; }
+    .ok { fill: #3fb950; font-weight: 600; }
+  </style>
+  <text class="h" x="0" y="24">Run</text>
+  <text class="m e" x="840" y="24">optional key <tspan class="k">nightly-import</tspan></text>
+  <line class="line" x1="1" y1="136" x2="428" y2="136"/>
+  <text class="m c" x="40" y="62">enqueue</text>
+  <circle class="enq" cx="40" cy="82" r="6"/>
+  <line class="arr" x1="40" y1="88" x2="40" y2="105"/>
+  <polygon class="enq" points="35,104 45,104 40,113"/>
+  <text class="m c" x="300" y="62">same key: adds nothing</text>
+  <circle class="none" cx="300" cy="82" r="6"/>
+  <line class="stop" x1="300" y1="90" x2="300" y2="111"/>
+  <rect class="wait" x="1" y="114" width="149" height="44" rx="8"/>
+  <text class="c" x="75.5" y="141">waits</text>
+  <rect class="run" x="162" y="114" width="230" height="44" rx="8"/>
+  <text class="rt c" x="277" y="141">run</text>
+  <rect class="card" x="428" y="114" width="410" height="44" rx="8"/>
+  <text class="c" x="633" y="141"><tspan class="ok">succeeded</tspan> · enqueued 10:00 · finished 10:03</text>
+  <text class="m c" x="633" y="182">after success: kept for the queue's retention</text>
+</svg>
