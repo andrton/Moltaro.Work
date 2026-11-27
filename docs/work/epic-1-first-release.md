@@ -1042,15 +1042,12 @@ Opus 5.5, `xhigh` · **Needs:** S2.
   in CI; `docs/storage.md` covers them.
 - **Projects.** Both packed, as S2's, referencing `Moltaro.Work` and
   `Microsoft.Data.SqlClient` or `MySqlConnector`; `Moltaro.Work.SqlServer.Tests` and
-  `Moltaro.Work.MySql.Tests` as S2's. The `build` job gains the service containers
-  `mcr.microsoft.com/mssql/server:2019-latest` and `mysql:8.4`, with their variables; the
-  SQL Server test project turns READ_COMMITTED_SNAPSHOT on in the database it creates.
-  `ci.yml` gains `on: workflow_call`, and `publish.yml` runs it as its first job instead of
-  services of its own: its `publish` job needs every job of `ci.yml` to pass on the tag's
-  commit, refuses a tag not on `main` before it builds, then packs and pushes, and alone
-  holds `id-token: write` and the sign-in, so that the Trusted Publishing policy of
-  `publish.yml` still applies. X1 of the exceptions narrows to `ci.yml`. The new form
-  first runs at the release (S18).
+  `Moltaro.Work.MySql.Tests` as S2's. The `build` job and the job of Publish gain the
+  service containers `mcr.microsoft.com/mssql/server:2019-latest` and `mysql:8.4`, with
+  their variables; the SQL Server test project turns READ_COMMITTED_SNAPSHOT on in the
+  database it creates. The two workflows keep their services each: Publish packs the very
+  build it tested, with the tag's version, which a reused CI job would not (the architect's
+  review after S2, entry 3, refused).
 - **Contract.**
 
   ```csharp
