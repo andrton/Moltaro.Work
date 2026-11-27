@@ -67,15 +67,6 @@ An entry is numbered `Q1`, `Q2`, … and keeps its number for good:
 | **Until answered** | The plan keeps W16 as written; no sprint of Stage 1 implements it. The question is answered before the contract of Stage 2 is approved |
 | **Decides** | The owner |
 
-### Q4. A cancellation that the SQL Server driver reports as its own error
-
-| | |
-| --- | --- |
-| **Found** | 27 November 2026, in round 2 of the review of S1 |
-| **Question** | `IWorkStore` says, by the cancellation rule of the [plan](epic-1-first-release.md#rules-for-every-public-member), that a cancellation that comes after the call ends the task cancelled. Microsoft.Data.SqlClient may report a command cancelled through its token as a `SqlException` instead of an `OperationCanceledException`, and W10 forbids a provider to catch a driver error in an enqueue. Can the SQL Server provider keep both rules, and if not, which one gives way? |
-| **Until answered** | The contract keeps the rule as written. S3, which documents the errors of each enqueue of SQL Server and MySQL, does not start before the answer |
-| **Decides** | The planner when both rules can hold, and it reports to the owner; the owner when the cancellation rule of the public contract has to give way |
-
 ### Q5. Which exception ends `RunAsync` when two of its rules meet
 
 | | |
@@ -85,6 +76,18 @@ An entry is numbered `Q1`, `Q2`, … and keeps its number for good:
 | **Until answered** | The documentation of `WorkWorker` names both rules and not the case where they meet. S7, which implements `RunAsync`, does not start before the answer |
 | **Decides** | The planner, with the contract of Stage 2 |
 
+## Answered
+
+### Q4. A cancellation that the SQL Server driver reports as its own error
+
+| | |
+| --- | --- |
+| **Found** | 27 November 2026, in round 2 of the review of S1 |
+| **Question** | `IWorkStore` says, by the cancellation rule of the [plan](epic-1-first-release.md#rules-for-every-public-member), that a cancellation that comes after the call ends the task cancelled. Microsoft.Data.SqlClient may report a command cancelled through its token as a `SqlException` instead of an `OperationCanceledException`, and W10 forbids a provider to catch a driver error in an enqueue. Can the SQL Server provider keep both rules, and if not, which one gives way? |
+| **Until answered** | The contract keeps the rule as written. S3, which documents the errors of each enqueue of SQL Server and MySQL, does not start before the answer |
+| **Decides** | The planner when both rules can hold, and it reports to the owner; the owner when the cancellation rule of the public contract has to give way |
+| **Answered** | 27 November 2026, by the planner: both rules hold. Once its token is cancelled, the store ends the task cancelled whatever the driver reports, with the driver's exception as the inner one; that is the caller's own cancellation, not a database error, so W10 holds as written. The rule lives in S3's brief, for `SqlServerWorkStore`, and S14 tests it |
+
 ### Q8. Where the worker of `AddWorkWorker` gets its client
 
 | | |
@@ -93,8 +96,7 @@ An entry is numbered `Q1`, `Q2`, … and keeps its number for good:
 | **Question** | S4's `AddWork` creates the `WorkClient` with the system clock, and an application that gives its `ISignals` another clock creates the client itself. S4's brief does not say where `AddWorkWorker`'s worker gets its `WorkClient`: from the container, so that such an application registers its own client and still uses `AddWorkWorker`, or only from `AddWork`? |
 | **Until answered** | S4's brief says nothing of it. S4 does not start before the answer |
 | **Decides** | The planner, as it follows from the hosting contract, and reports to the owner |
-
-## Answered
+| **Answered** | 27 November 2026, by the planner: the worker of `AddWorkWorker` uses the container's `WorkClient`, whether `AddWork` or the application registered it. The rule lives in S4's brief |
 
 ### Q6. Whose clock a worker uses
 
