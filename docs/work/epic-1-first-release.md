@@ -1,7 +1,7 @@
 # Epic 1: First release
 
-**Status:** approved by the owner on 27 November 2026, with the contract of Stage 1; S1,
-S1R, S2 and S3 done, S4 next.
+**Status:** approved by the owner on 27 November 2026, with the contract of Stage 1; S1 to
+S4 done; the architect's review of Stage 1 and the owner's approval of the samples next.
 
 ## Standing permission
 
@@ -401,7 +401,10 @@ tested in `Moltaro.Work.Tests`; "conformance" is the suite on each real database
 - **The architect's review** follows every merged sprint, as the next coordinator's first
   task, and reads the whole code base after a stage's last sprint. A refactoring sprint
   (S7R after S7) exists only when an entry of its list was taken; it has a refactorer at
-  `high`, and its brief says that KISS holds there as everywhere.
+  `high`, and its brief says that KISS holds there as everywhere. In Stage 1, by the owner's
+  decision of 27 November 2026, S4 runs beside S3, each in a checkout of its own and merged
+  in turn, and one architect's review of the whole code base follows S4 instead of one
+  after S3.
 - **Stages and their contracts.** The contract of Stage 1 is written out below and is
   approved with this plan. For a later stage the briefs say what the sprint must achieve and
   the cases that prove it, not how its SQL or its loop is built; before the stage begins,
@@ -482,7 +485,7 @@ two more databases against a finished conformance suite.
 | S1R | The architect's list after S1 | Refactoring | Done, in two review rounds |
 | S2 | The PostgreSQL provider contract and schema | Full | Done, in two review rounds |
 | S3 | The SQL Server and MySQL provider contracts and schemas | Full | Done, in two review rounds |
-| S4 | The hosting contract and the samples | Full | Not started |
+| S4 | The hosting contract and the samples | Full | Done, in three review rounds |
 | S5 | Coalescing enqueue and the commit that wakes, on PostgreSQL | Full | Not started |
 | S6 | Claim, lease, heartbeat and fenced completion | Full | Not started |
 | S7 | The worker: lanes, waking and stop | Full | Not started |
@@ -1230,7 +1233,7 @@ Opus 5.5, `xhigh` · **Needs:** S2.
 ### S4 · The hosting contract and the samples
 
 **Track:** full · **Branch:** `epic-1/sprint-04-hosting-contract` · **Implementer:** Opus
-5.5, `high` · **Needs:** S3.
+5.5, `high` · **Needs:** S2; runs beside S3 (Rules for every sprint, "The architect's review").
 
 - **Goal.** The package `Moltaro.Work.Hosting` exists, refusing after its checks; the
   samples show the whole intended use and report where they stop; `dotnet pack` produces the
@@ -1286,8 +1289,8 @@ Opus 5.5, `xhigh` · **Needs:** S2.
 - **To read.** S1's brief; `SignalServiceCollectionExtensions` of `Moltaro.Signals.Hosting`
   0.1.0.
 - **Acceptance.** Tests that pass: the argument checks of both methods; the references of
-  `Moltaro.Work.Hosting` (assemblies of .NET, `Microsoft.Extensions.*`, `Moltaro.Work`,
-  `Moltaro.Signals`); `dotnet pack -c Release` from `src` produces exactly the five
+  `Moltaro.Work.Hosting` (assemblies of .NET, `Microsoft.Extensions.*.Abstractions`,
+  `Moltaro.Work`, `Moltaro.Signals`); `dotnet pack -c Release` from `src` produces exactly the five
   packages. Skipped, folder `Registration`: the client resolves over the registered store
   and `ISignals`; a worker uses a `WorkClient` that the application registered without
   `AddWork`; a worker's handler runs in a scope of its own per item; a worker stops with
@@ -1323,7 +1326,8 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
   enqueue one key at once leave one item: at REPEATABLE READ the second either fails with
   the error its provider documents (W10) or waits and reports `Coalesced`. The queue's
   member is signalled after `CommitAsync`, not after a rollback, a failed commit or a failed
-  enqueue; that case moves `LoopbackSignalHost` to TestSupport. The sample
+  enqueue; that case moves `LoopbackSignalHost` to TestSupport, where it also replaces the
+  `LoopbackSignals` of `Moltaro.Work.Hosting.Tests`. The sample
   `EnqueueInTransaction` runs to the end.
 - **Out of scope.** Claims, logs, runs, scopes.
 
@@ -1375,8 +1379,8 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
   the decision component with the waking, then the lanes with heartbeats and stop.
 - **Acceptance.** Policy tests of the wait and of lease loss at their edges. Conformance,
   area `Worker`, whose class S2 left empty and S7 fills, with an in-process `SignalHost`
-  and one `FakeTimeProvider` for host and client, which `LoopbackSignalHost` takes as a parameter: a commit starts the handler
-  without moving a clock; an item due in 30 seconds starts once both clocks moved; an idle
+  and one `FakeTimeProvider` for host and client, which `LoopbackSignalHost` takes as a
+  parameter: a commit starts the handler without moving a clock; an item due in 30 seconds starts once both clocks moved; an idle
   worker sends no statement before its idle bound and
   one then, counted through the driver's tracing; two workers of one lane each share a
   commit of three items without waiting for an idle bound, and a due time reached while one
@@ -1402,7 +1406,8 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
   worker included; the sample `GenericHostWorker` runs to the end.
 - **Acceptance.** S4's tests of `Registration` pass, the log lines read through a logger
   provider of the test. The hosting tests use PostgreSQL from here on, so the `windows` job
-  runs `Moltaro.Work.Tests` only.
+  runs `Moltaro.Work.Tests` only; S4's store double `HandOutWorkStore` and the job's step for
+  `Moltaro.Work.Hosting.Tests` go then, unless S8's contract keeps them.
 - **Out of scope.** What the worker does beyond S7.
 
 ## Stage 3: hardening and widening on PostgreSQL

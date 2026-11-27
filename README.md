@@ -15,7 +15,9 @@ and every other entry point throws `NotSupportedException`. The providers
 contracts and their schema scripts of version 1, which [storage](docs/storage.md) describes.
 Each script creates the tables on its database: PostgreSQL 15, SQL Server 2019 or MySQL 8.4, or
 later. Each store checks its data source and refuses the transaction of an enqueue on another
-database; every one of its operations throws `NotSupportedException`. Nothing below works today.
+database; every one of its operations throws `NotSupportedException`. The hosting package
+`Moltaro.Work.Hosting` exists as its contract: `AddWork` and `AddWorkWorker` check their
+arguments and throw `NotSupportedException`. Nothing below works today.
 The first epic, the library up to its first release, is planned in
 [current work](docs/work/README.md); its first stage is the public .NET contract.
 

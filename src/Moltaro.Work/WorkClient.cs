@@ -21,21 +21,36 @@ namespace Moltaro.Work;
 public sealed class WorkClient
 {
     /// <summary>
-    /// Creates a client over a store and a signals client or host.
+    /// Creates a client over a store, a signals client or host, and the clock of its workers.
     /// </summary>
     /// <param name="store">The store of the provider of the application's database.</param>
     /// <param name="signals">
     /// The Moltaro.Signals client or in-process host through which commits set the signals of their queues and
     /// workers wait for them.
     /// </param>
+    /// <param name="timeProvider">
+    /// The clock of the timers of the client's workers: their heartbeats, their failure delays and the deadlines of
+    /// their waits. <see langword="null"/> means <see cref="TimeProvider.System"/>, which is also the default clock of
+    /// <see cref="SignalHost"/> and <see cref="SignalClient"/>.
+    /// </param>
+    /// <remarks>
+    /// The clock has to be the one of <paramref name="signals"/>. A worker passes the deadline of each wait to its
+    /// subscription as an instant: it adds the durations that the database computed, from the database's now to the
+    /// next claimable time and to the next expiry, to the now of this clock, and the subscription compares that
+    /// instant with the clock of the object that created it. A duration compares no two clocks, so due times and lease
+    /// ends stay the database's; the error is the drift of one clock during one wait. In production both are
+    /// <see cref="TimeProvider.System"/>; tests give both the same fake clock. The client cannot check it, because an
+    /// <see cref="ISignals"/> does not expose its clock. Every worker of the client uses this one clock.
+    /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="store"/> or <paramref name="signals"/> is <see langword="null"/>.</exception>
-    public WorkClient(IWorkStore store, ISignals signals)
+    public WorkClient(IWorkStore store, ISignals signals, TimeProvider? timeProvider = null)
     {
         ArgumentNullException.ThrowIfNull(store);
         ArgumentNullException.ThrowIfNull(signals);
 
         Store = store;
         Signals = signals;
+        TimeProvider = timeProvider ?? TimeProvider.System;
     }
 
     // The store every enqueue, requeue and worker of this client goes through.
@@ -43,6 +58,9 @@ public sealed class WorkClient
 
     // The signals that commits and requeues set and that workers wait for.
     internal ISignals Signals { get; }
+
+    // The clock of the timers of every worker of this client; the clock of Signals (W6).
+    internal TimeProvider TimeProvider { get; }
 
     /// <summary>
     /// Joins a transaction of the application, so that items are enqueued in it and it is committed through the

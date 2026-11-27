@@ -9,7 +9,7 @@ namespace Moltaro.Work;
 /// <see cref="ArgumentOutOfRangeException"/>; any other wrong value gives <see cref="ArgumentException"/>. The
 /// <see cref="ArgumentException.ParamName"/> is the name of the property. A <see cref="TimeSpan"/> option is greater
 /// than zero and at most <c>TimeSpan.FromMilliseconds(uint.MaxValue - 1)</c>, the longest timer of
-/// <see cref="System.TimeProvider"/>.
+/// <see cref="System.TimeProvider"/>. The timers of the worker run on the clock of its <see cref="WorkClient"/>.
 /// </remarks>
 public sealed class WorkWorkerOptions
 {
@@ -63,16 +63,4 @@ public sealed class WorkWorkerOptions
     /// The most items one delete of expired items removes. 1 to 100000; 1000 by default.
     /// </summary>
     public int RetentionBatchSize { get; set; } = 1000;
-
-    /// <summary>
-    /// The clock of the worker's own timers: its heartbeats, its failure delay and the deadlines of its waits. Not
-    /// <see langword="null"/>; <see cref="System.TimeProvider.System"/> by default.
-    /// </summary>
-    /// <remarks>
-    /// It has to be the clock of the <see cref="Moltaro.Signals.ISignals"/> of the worker's client, because the
-    /// worker passes the deadline of each wait to it as an instant: it adds the durations that the database computed
-    /// to the now of this clock. Due times and lease ends themselves are the database's. Tests use one fake clock for
-    /// both.
-    /// </remarks>
-    public TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 }

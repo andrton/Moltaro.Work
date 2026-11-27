@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Registers Moltaro.Work, durable background work for .NET in the application's own database, in a .NET generic host and its service container: the store of the provider, the client over it and the Moltaro.Signals ISignals of the container, and a worker per queue with its handler, which writes its log lines.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Moltaro.Work\Moltaro.Work.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+  </ItemGroup>
+
+</Project>

@@ -7,7 +7,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Moltaro.Work\Moltaro.Work.csproj" />
+    <ProjectReference Include="..\Moltaro.Work.Hosting\Moltaro.Work.Hosting.csproj" />
     <ProjectReference Include="..\Moltaro.Work.PostgreSql\Moltaro.Work.PostgreSql.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Moltaro.Signals.Hosting" />
   </ItemGroup>
 
 </Project>

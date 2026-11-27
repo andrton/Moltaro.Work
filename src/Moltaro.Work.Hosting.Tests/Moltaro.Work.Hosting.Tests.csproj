@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The tests of the hosting package, which need no database. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Moltaro.Work.Hosting\Moltaro.Work.Hosting.csproj" />
+    <ProjectReference Include="..\Moltaro.Work.TestSupport\Moltaro.Work.TestSupport.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Moltaro.Signals.Hosting" />
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+</Project>
