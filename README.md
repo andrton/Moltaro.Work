@@ -10,10 +10,12 @@ dead items, clean up by retention, wake at once with
 Contract stage. The [concept](docs/concept.md) is agreed. The core package `Moltaro.Work`
 exists as its public contract, documented: its types check their arguments and options,
 `WorkClient.Join` and `WorkTransaction.EnqueueAsync` hand a checked enqueue to the provider,
-and every other entry point throws `NotSupportedException`. The PostgreSQL provider
-`Moltaro.Work.PostgreSql` exists as its contract and its schema script of version 1, which
-[storage](docs/storage.md) describes: the script creates the tables on PostgreSQL 15 or later,
-and every operation of its store throws `NotSupportedException`. The hosting package
+and every other entry point throws `NotSupportedException`. The providers
+`Moltaro.Work.PostgreSql`, `Moltaro.Work.SqlServer` and `Moltaro.Work.MySql` exist as their
+contracts and their schema scripts of version 1, which [storage](docs/storage.md) describes.
+Each script creates the tables on its database: PostgreSQL 15, SQL Server 2019 or MySQL 8.4, or
+later. Each store checks its data source and refuses the transaction of an enqueue on another
+database; every one of its operations throws `NotSupportedException`. The hosting package
 `Moltaro.Work.Hosting` exists as its contract: `AddWork` and `AddWorkWorker` check their
 arguments and throw `NotSupportedException`. Nothing below works today.
 The first epic, the library up to its first release, is planned in
@@ -148,8 +150,8 @@ published yet. [Branches and releases](docs/work/branches.md) describes how work
 
 - [Concept](docs/concept.md): where it comes from, shapes and rules, providers, decisions
   and quality bar.
-- [Storage](docs/storage.md): the provider contract and the schema of PostgreSQL; those of
-  SQL Server and MySQL are planned.
+- [Storage](docs/storage.md): the provider contract and the schemas of PostgreSQL, SQL Server
+  and MySQL.
 - [Documentation index](docs/README.md) and [current work](docs/work/README.md).
 - [How the project is built](AGENTS.md): architectural principles, code style and working
   rules, for people and coding agents.
@@ -167,11 +169,12 @@ dotnet build
 dotnet test
 ```
 
-`MOLTARO_WORK_POSTGRESQL` holds a connection string to PostgreSQL 15 or later. The tests of
-the PostgreSQL provider use it as a server where each run creates a database of its own and
-drops it at the end; without it they fail. The samples, run with
-`dotnet run --project Moltaro.Work.Samples`, use it as a database where they create their
-tables and leave them.
+The tests of each provider need its database: `MOLTARO_WORK_POSTGRESQL` holds a connection
+string to PostgreSQL 15 or later, `MOLTARO_WORK_SQLSERVER` to SQL Server 2019 or later, and
+`MOLTARO_WORK_MYSQL` to MySQL 8.4 or later. Each is used as a server where each run creates a
+database of its own and drops it at the end; without its variable, the tests of that provider
+fail. The samples, run with `dotnet run --project Moltaro.Work.Samples`, use
+`MOLTARO_WORK_POSTGRESQL` as a database where they create their tables and leave them.
 
 ## License
 

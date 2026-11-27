@@ -37,8 +37,36 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 12
+      # ACCEPT_EULA accepts the licence of the SQL Server image, as the owner did with
+      # PQ5 of the Epic 1 plan. sqlcmd -C trusts the certificate the container made.
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: Ci-throwaway-1
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Ci-throwaway-1 -C -Q 'SELECT 1'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 24
+      # The ping goes over TCP, which MySQL opens only once its first start has ended.
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ci-throwaway
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -u root -pci-throwaway"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 24
     env:
       MOLTARO_WORK_POSTGRESQL: Host=localhost;Port=5432;Username=postgres;Password=ci-throwaway;Database=postgres
+      MOLTARO_WORK_SQLSERVER: Server=127.0.0.1,1433;User ID=sa;Password=Ci-throwaway-1;TrustServerCertificate=True
+      MOLTARO_WORK_MYSQL: Server=127.0.0.1;Port=3306;User ID=root;Password=ci-throwaway
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v6

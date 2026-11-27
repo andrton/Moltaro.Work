@@ -4,11 +4,10 @@
 the schema mean, and what each database needs. The schema is part of the public contract: an
 application creates the tables with a provider's script and may read them.
 
-**What exists.** The provider contract `IWorkStore` of the core, and the PostgreSQL provider
-`Moltaro.Work.PostgreSql` with its schema script. No operation is implemented yet: every operation
-of `PostgreSqlWorkStore` throws `NotSupportedException` until the sprint of the
-[first epic](work/epic-1-first-release.md) that implements it. The SQL Server and MySQL providers
-are planned.
+**What exists.** The provider contract `IWorkStore` of the core, and three providers with their
+schema scripts: `Moltaro.Work.PostgreSql`, `Moltaro.Work.SqlServer` and `Moltaro.Work.MySql`. Each
+store checks its data source and refuses the transaction of an enqueue on another database; every
+one of its operations throws `NotSupportedException`, and each is planned.
 
 ## The provider contract
 
@@ -61,8 +60,7 @@ ended and never the time until a lease ends, and until an item is expired.
 ## The schema, version 1
 
 The same three tables in every database, created by the provider's script in the connection's
-default schema. Only PostgreSQL's script is below today; those of SQL Server and MySQL come with
-S3 of the first epic.
+default schema. The section of each database below has its script.
 
 `moltaro_work_item` holds the items of every queue:
 
@@ -95,21 +93,22 @@ queue by `finished_at`, for retention.
 the held item's `item_id`. Its primary key on `queue` and `scope` is the scope rule, kept without
 advisory locks.
 
-`moltaro_work_schema` holds one row, the version of the schema. A later version comes with a
-script that changes the tables and that row, and a store refuses, in `CheckDatabaseAsync`, a
-database whose version is not its own.
+`moltaro_work_schema` holds one row, the version of the schema, which is its primary key. A later
+version comes with a script that changes the tables and that row, and a store refuses, in
+`CheckDatabaseAsync`, a database whose version is not its own.
 
 Rules every provider keeps:
 
 - **Exact comparison.** Queue names, keys and scopes compare exactly, case included: their columns
-  use a binary collation.
+  use a binary collation. SQL Server's ignores trailing spaces, so a key or a scope may not end with
+  one.
 - **Times** are stored in UTC to the microsecond, truncated.
 - **No foreign key**, because `READPAST` and skip-locked reads still wait on them.
 - **Limits that the schema fixes.** A queue name is at most 100 characters, a key and a scope at
   most 200, as their columns fix; the core refuses a longer one. A reason is at most 4000
-  characters, a rule of the core and not of a column on PostgreSQL, whose `reason` is `text`: the
-  worker is to cut a longer reason to that length, never inside a surrogate pair, which is
-  planned and not implemented yet. These limits change only with the schema's version.
+  characters, as SQL Server's `nvarchar(4000)` fixes it, while PostgreSQL's and MySQL's `reason` is
+  `text`: the worker is to cut a longer reason to that length, never inside a surrogate pair,
+  which is planned and not implemented yet. These limits change only with the schema's version.
 
 ## Reading the tables
 
@@ -139,7 +138,8 @@ bytes:
 ```sql
 -- Moltaro.Work schema version 1, PostgreSQL 15 or later.
 CREATE TABLE moltaro_work_schema (
-    version integer NOT NULL
+    version integer NOT NULL,
+    CONSTRAINT moltaro_work_schema_pk PRIMARY KEY (version)
 );
 
 INSERT INTO moltaro_work_schema (version) VALUES (1);
@@ -179,4 +179,156 @@ CREATE TABLE moltaro_work_scope (
     item_id bigint       NOT NULL,
     CONSTRAINT moltaro_work_scope_pk PRIMARY KEY (queue, scope)
 );
+```
+
+## SQL Server
+
+- **Version.** SQL Server 2019 or later, or Azure SQL Database.
+- **Database.** READ_COMMITTED_SNAPSHOT is ON, because without it the reads of the candidates of a
+  claim deadlock with claims. `CheckDatabaseAsync` checks it together with the schema version,
+  before a worker runs. Claims read with `UPDLOCK, READPAST`, because under that setting a plain
+  read does not skip locked rows.
+- **Sessions.** Every session that changes the tables, the caller's included, needs the SET options
+  of filtered indexes: ANSI_NULLS, ANSI_PADDING, ANSI_WARNINGS, ARITHABORT,
+  CONCAT_NULL_YIELDS_NULL and QUOTED_IDENTIFIER ON, and NUMERIC_ROUNDABORT OFF. The defaults of
+  Microsoft.Data.SqlClient meet them at a compatibility level of 90 or higher.
+- **Script.** `src/Moltaro.Work.SqlServer/Schema/version-1.sql`, which
+  `SqlServerWorkStore.SchemaScript` returns: one batch, without `GO`. The application applies it
+  once, with its own migration tool. It sets the SET options itself, because `sqlcmd` leaves
+  QUOTED_IDENTIFIER OFF. The tables are created in the connection's default schema, where the store
+  looks for them. Lock escalation is off for the item table, so that a large claim or delete never
+  locks every queue.
+- **Isolation.** The store's own transactions run at READ COMMITTED. The caller's transaction of an
+  enqueue may run at any isolation.
+- **Errors of an enqueue.** At any isolation an enqueue may fail as a deadlock victim (1205), and
+  under SNAPSHOT with an update conflict (3960). Both reach the caller as a `SqlException`, and SQL
+  Server has then rolled the transaction back.
+- **Cancellation.** Once the token of any of the store's operations is cancelled, a failure of the
+  driver ends the task cancelled, with the driver's exception as its inner one.
+  Microsoft.Data.SqlClient reports the cancellation of a command it sent as a `SqlException` of
+  error number 0, "Operation cancelled by user.", and of a command not yet sent as an
+  `InvalidOperationException`: that is the caller's cancellation, not a database error.
+
+The filtered indexes stand for PostgreSQL's partial ones, and the checks are spelled out, because
+T-SQL does not compare two conditions. `datetime2(6)` keeps microseconds, in UTC, and the collation
+`Latin1_General_100_BIN2` compares code points:
+
+```sql
+-- Moltaro.Work schema version 1, SQL Server 2019 or later. Needs READ_COMMITTED_SNAPSHOT ON.
+SET ANSI_NULLS, ANSI_PADDING, ANSI_WARNINGS, ARITHABORT, CONCAT_NULL_YIELDS_NULL, QUOTED_IDENTIFIER ON;
+SET NUMERIC_ROUNDABORT OFF;
+
+CREATE TABLE moltaro_work_schema (
+    version int NOT NULL,
+    CONSTRAINT moltaro_work_schema_pk PRIMARY KEY (version)
+);
+
+INSERT INTO moltaro_work_schema (version) VALUES (1);
+
+CREATE TABLE moltaro_work_item (
+    id           bigint         IDENTITY(1, 1) NOT NULL,
+    queue        varchar(100)   COLLATE Latin1_General_100_BIN2 NOT NULL,
+    state        tinyint        NOT NULL,
+    item_key     nvarchar(200)  COLLATE Latin1_General_100_BIN2 NULL,
+    active_key   nvarchar(200)  COLLATE Latin1_General_100_BIN2 NULL,
+    scope        nvarchar(200)  COLLATE Latin1_General_100_BIN2 NULL,
+    payload      nvarchar(max)  NULL,
+    due_at       datetime2(6)   NOT NULL,
+    again_due_at datetime2(6)   NULL,
+    lease_until  datetime2(6)   NULL,
+    fence        bigint         NOT NULL CONSTRAINT moltaro_work_item_fence_default DEFAULT 0,
+    attempts     int            NOT NULL CONSTRAINT moltaro_work_item_attempts_default DEFAULT 0,
+    enqueued_at  datetime2(6)   NOT NULL,
+    claimed_at   datetime2(6)   NULL,
+    finished_at  datetime2(6)   NULL,
+    reason       nvarchar(4000) NULL,
+    CONSTRAINT moltaro_work_item_pk PRIMARY KEY CLUSTERED (id),
+    CONSTRAINT moltaro_work_item_state CHECK (state BETWEEN 1 AND 4),
+    CONSTRAINT moltaro_work_item_lease
+        CHECK ((state = 2 AND lease_until IS NOT NULL) OR (state <> 2 AND lease_until IS NULL)),
+    CONSTRAINT moltaro_work_item_finished
+        CHECK ((state >= 3 AND finished_at IS NOT NULL) OR (state < 3 AND finished_at IS NULL))
+);
+
+CREATE UNIQUE INDEX moltaro_work_item_active_key ON moltaro_work_item (queue, active_key)
+    WHERE active_key IS NOT NULL;
+CREATE INDEX moltaro_work_item_waiting ON moltaro_work_item (queue, due_at, id) WHERE state = 1;
+CREATE INDEX moltaro_work_item_held ON moltaro_work_item (queue, lease_until) WHERE state = 2;
+CREATE INDEX moltaro_work_item_ended ON moltaro_work_item (queue, finished_at) WHERE state IN (3, 4);
+ALTER TABLE moltaro_work_item SET (LOCK_ESCALATION = DISABLE);
+
+CREATE TABLE moltaro_work_scope (
+    queue   varchar(100)  COLLATE Latin1_General_100_BIN2 NOT NULL,
+    scope   nvarchar(200) COLLATE Latin1_General_100_BIN2 NOT NULL,
+    item_id bigint        NOT NULL,
+    CONSTRAINT moltaro_work_scope_pk PRIMARY KEY CLUSTERED (queue, scope)
+);
+```
+
+## MySQL
+
+- **Version.** MySQL 8.4 or later, with InnoDB tables and row-based binary logging, because reads
+  that skip locked rows are unsafe for statement-based replication. MariaDB is not supported.
+- **Script.** `src/Moltaro.Work.MySql/Schema/version-1.sql`, which `MySqlWorkStore.SchemaScript`
+  returns. The application applies it once, with its own migration tool. MySQL commits every
+  `CREATE TABLE` at once, also inside a transaction, so a script that fails halfway leaves the
+  tables it created behind. The tables are created in the connection's database, its default
+  schema, where the store looks for them.
+- **Isolation.** The store's own transactions run at READ COMMITTED, which it sets on each. The
+  caller's transaction of an enqueue may run at any isolation.
+- **Errors of an enqueue.** At any isolation an enqueue may fail as a deadlock (1213), or after
+  waiting out `innodb_lock_wait_timeout` (1205) for a row that another transaction holds. Both
+  reach the caller as a `MySqlException`. After a deadlock MySQL has rolled the transaction back;
+  after a lock wait timeout it has undone that statement alone, unless `innodb_rollback_on_timeout`
+  is on.
+
+MySQL has no partial index. A unique index over the nullable `active_key` admits any number of
+`NULL`, which gives the same one item per active key. The waiting and held indexes lead with
+`state`; the ended one needs none, because the checks set `finished_at` exactly for ended items.
+`datetime(6)` keeps microseconds and holds UTC, because it has no time zone. The collations
+`ascii_bin` and `utf8mb4_0900_bin` compare bytes and code points, and `utf8mb4_0900_bin` does not
+pad:
+
+```sql
+-- Moltaro.Work schema version 1, MySQL 8.4 or later, InnoDB. Times are UTC.
+CREATE TABLE moltaro_work_schema (
+    version int NOT NULL,
+    CONSTRAINT moltaro_work_schema_pk PRIMARY KEY (version)
+) ENGINE = InnoDB;
+
+INSERT INTO moltaro_work_schema (version) VALUES (1);
+
+CREATE TABLE moltaro_work_item (
+    id           bigint       NOT NULL AUTO_INCREMENT,
+    queue        varchar(100) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    state        tinyint      NOT NULL,
+    item_key     varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin NULL,
+    active_key   varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin NULL,
+    scope        varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin NULL,
+    payload      longtext     CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin NULL,
+    due_at       datetime(6)  NOT NULL,
+    again_due_at datetime(6)  NULL,
+    lease_until  datetime(6)  NULL,
+    fence        bigint       NOT NULL DEFAULT 0,
+    attempts     int          NOT NULL DEFAULT 0,
+    enqueued_at  datetime(6)  NOT NULL,
+    claimed_at   datetime(6)  NULL,
+    finished_at  datetime(6)  NULL,
+    reason       text         CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin NULL,
+    CONSTRAINT moltaro_work_item_pk PRIMARY KEY (id),
+    CONSTRAINT moltaro_work_item_state CHECK (state BETWEEN 1 AND 4),
+    CONSTRAINT moltaro_work_item_lease CHECK ((state = 2) = (lease_until IS NOT NULL)),
+    CONSTRAINT moltaro_work_item_finished CHECK ((state >= 3) = (finished_at IS NOT NULL)),
+    UNIQUE INDEX moltaro_work_item_active_key (queue, active_key),
+    INDEX moltaro_work_item_waiting (queue, state, due_at, id),
+    INDEX moltaro_work_item_held (queue, state, lease_until),
+    INDEX moltaro_work_item_ended (queue, finished_at)
+) ENGINE = InnoDB;
+
+CREATE TABLE moltaro_work_scope (
+    queue   varchar(100) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    scope   varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin NOT NULL,
+    item_id bigint       NOT NULL,
+    CONSTRAINT moltaro_work_scope_pk PRIMARY KEY (queue, scope)
+) ENGINE = InnoDB;
 ```

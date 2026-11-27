@@ -1,7 +1,7 @@
 # Epic 1: First release
 
 **Status:** approved by the owner on 27 November 2026, with the contract of Stage 1; S1,
-S1R and S2 done, S3 next.
+S1R, S2 and S3 done, S4 next.
 
 ## Standing permission
 
@@ -157,6 +157,11 @@ here for the owner, with the sprint and the reason.
   clock that `Moltaro.Signals.Hosting` 0.1.0 also gives its `ISignals` by default; the
   owner chose it on the same day over the container's `TimeProvider`, which that package
   does not read. S4 makes it.
+- **S3, a primary key on the version table.** `moltaro_work_schema` gets the primary key
+  `moltaro_work_schema_pk (version)` in all three scripts of version 1. Without it, MySQL with
+  `sql_require_primary_key` refuses the script, MySQL's Group Replication refuses every write
+  to the table, and PostgreSQL's logical replication refuses to change the version row.
+  From the review of S3, decided by the coordinator while the schema is a draft. S3 makes it.
 
 ## Open questions
 
@@ -479,7 +484,7 @@ two more databases against a finished conformance suite.
 | S1 | The core contract and the test lane | Full | Done, in three review rounds |
 | S1R | The architect's list after S1 | Refactoring | Done, in two review rounds |
 | S2 | The PostgreSQL provider contract and schema | Full | Done, in two review rounds |
-| S3 | The SQL Server and MySQL provider contracts and schemas | Full | Not started |
+| S3 | The SQL Server and MySQL provider contracts and schemas | Full | Done, in two review rounds |
 | S4 | The hosting contract and the samples | Full | Not started |
 | S5 | Coalescing enqueue and the commit that wakes, on PostgreSQL | Full | Not started |
 | S6 | Claim, lease, heartbeat and fenced completion | Full | Not started |
@@ -1048,7 +1053,9 @@ Opus 5.5, `xhigh` · **Needs:** S2.
   `Moltaro.Work.MySql.Tests` as S2's. The `build` job and the job of Publish gain the
   service containers `mcr.microsoft.com/mssql/server:2019-latest` and `mysql:8.4`, with
   their variables; the SQL Server test project turns READ_COMMITTED_SNAPSHOT on in the
-  database it creates.
+  database it creates. The two workflows keep their services each: Publish packs the very
+  build it tested, with the tag's version, which a reused CI job would not (the architect's
+  review after S2, entry 3, refused).
 - **Contract.**
 
   ```csharp
@@ -1099,10 +1106,12 @@ Opus 5.5, `xhigh` · **Needs:** S2.
   - `MySqlWorkStore` documents: MySQL 8.4 or later with InnoDB and row-based binary
     logging, because skip-locked reads are unsafe for statement-based replication; MariaDB
     is not supported; its own transactions run at READ COMMITTED, which it sets on each; at
-    MySQL's default REPEATABLE READ, concurrent enqueues of one key in callers'
-    transactions can deadlock (1213) or wait out `innodb_lock_wait_timeout` (1205), as
-    `MySqlException` (W10).
-- **The schemas, version 1.** `Schema/version-1.sql` of each, written as it stands here.
+    any isolation, concurrent enqueues of one key in callers' transactions can deadlock
+    (1213) or wait out `innodb_lock_wait_timeout` (1205), as `MySqlException` (W10), as the
+    review of S3 corrected.
+- **The schemas, version 1.** `Schema/version-1.sql` of each, written as it stands here,
+  with the primary key of `moltaro_work_schema` that "Changes of the contract" adds to all
+  three scripts.
 
   ```sql
   -- Moltaro.Work schema version 1, SQL Server 2019 or later. Needs READ_COMMITTED_SNAPSHOT ON.
@@ -1208,7 +1217,17 @@ Opus 5.5, `xhigh` · **Needs:** S2.
 - **Acceptance.** For each of the two, as S2's: the script applies and records 1, the
   constructor's checks, the references (`Microsoft.Data.SqlClient` or `MySqlConnector`),
   and the suite's areas derived and skipped. Every test of the three provider projects runs
-  in the `build` job.
+  in the `build` job. Conformance, area `Enqueue`, not skipped because each store checks
+  it from its contract on: an enqueue on a transaction of another database is refused by
+  the call with `ArgumentException` (`transaction`); `FakeDbTransaction` moves to the
+  `Doubles` of TestSupport for it.
+- **Documents**, from the architect's review after S2: `README.md` "Status" alone says what
+  exists, and `AGENTS.md` keeps only its pointer to it; `docs/work/README.md` points to
+  `src/Moltaro.Work.slnx` for the projects; `docs/storage.md` and `docs/README.md` call
+  what is not built planned, without sprint numbers; "Layout" of `AGENTS.md` gains its
+  missing `Moltaro.Work.TestSupport` row. By the owner's decision of 27 November 2026, concept
+  §3 rule 5 and §4 name release and the check of the database, which PQ7 (b) and S1's
+  contract gave the provider.
 - **Out of scope.** Any SQL besides the scripts and the test projects' clock statements.
 
 ### S4 · The hosting contract and the samples
@@ -1277,7 +1296,11 @@ Opus 5.5, `xhigh` · **Needs:** S2.
   `AddWork`; a worker's handler runs in a scope of its own per item; a worker stops with
   the application after its handlers ended; a second worker of one queue is refused; the
   two log lines. The samples that [Rules for every sprint](#rules-for-every-sprint),
-  "Samples", gives to S4 are written and stop where they refuse.
+  "Samples", gives to S4 are written and stop where they refuse. 02 applies the schema, and
+  the later samples rely on the order of `Program.cs` instead of applying it again; 05 to
+  07 run in the frame of 03, a signal host, a client and a worker without a host, which
+  `03-Worker` offers once; each sample uses queue names of its own, because all of them
+  share one database across runs.
 - **Out of scope.** Any behavior beyond the checks; overloads that bind options from
   configuration; health checks.
 
@@ -1296,7 +1319,8 @@ Its contract is written before S5; the public contract of Stage 1 should carry i
   `docs/storage.md`, W3 and W10 say; `WorkTransaction.CommitAsync`. `Join` hands
   `WorkTransaction` the client, as `WorkWorker` gets it, and W11 is spelled once: an
   internal signal key that `WorkQueue` computes once, and one internal constant for the
-  group.
+  group. The store's check of the transaction's connection stays outside the async body of
+  `EnqueueAsync`, so that it is thrown by the call, as S3's conformance case states.
 - **Acceptance.** Conformance, area `Enqueue`: a second enqueue of a committed key reports
   `Coalesced` with the first's id, and after a rollback `Added`; two transactions that
   enqueue one key at once leave one item: at REPEATABLE READ the second either fails with
