@@ -45,12 +45,15 @@ Every queue has one of three shapes. All three share one mechanism: retries with
 dead items, leases and retention. They differ in what an item means, what a second enqueue
 does, and what remains after success.
 
-![Three timelines. Coalescing: many enqueues of one key while its item waits leave that one item, which runs once; enqueues during the run add one mark, so it runs once more, then it is deleted. Log: three enqueues become three items, three runs, each deleted. Run: a second enqueue with the same key while the first is active adds nothing; after success the run is kept with its outcome.](docs/images/shapes.svg)
-
 ### Coalescing: "this object needs attention"
 
 A coalescing queue holds one item per key, and the key names an object of the application.
 The item carries no payload: its handler reads the object's current state.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/coalescing-dark.svg">
+  <img alt="Coalescing with the key invoice-42: three enqueues while the item waits leave that one item, which runs; two enqueues during the run add one mark, so exactly one more run follows, and then the item is deleted." src="docs/images/coalescing-light.svg">
+</picture>
 
 For example, the key `invoice-42` means "recompute the totals of invoice 42". Changes made
 while the item waits leave that one item. Changes made while it runs add one more run, not
@@ -78,6 +81,11 @@ A log queue holds one item per enqueue, with a payload that the application seri
 For example: "send the confirmation mail of order 17", "notify the webhook of order 18".
 Every event must be handled, so every event becomes its own item.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/log-dark.svg">
+  <img alt="Log: three enqueues, mail for order 17, webhook for order 18 and mail for order 19, become three items; each waits, runs and is deleted after its run." src="docs/images/log-light.svg">
+</picture>
+
 - **After success** the item is deleted.
 - **An optional key** guards against duplicates: while an item with that key is active,
   waiting or running, an enqueue with the same key adds nothing. A business transaction
@@ -89,6 +97,11 @@ A run queue holds, like a log, one item per enqueue, with a payload. The differe
 remains: after success a run is kept, with its status, attempts, times and last error, for
 the queue's retention, so that an application can show its history. For example: "import
 of file X: enqueued 10:00, 2 attempts, finished 10:03".
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/run-dark.svg">
+  <img alt="Run with the optional key nightly-import: an enqueue creates an item, which waits and then runs; a second enqueue with the same key while the item is active adds nothing; after success the item is kept with its outcome, completed, enqueued 10:00, finished 10:03, for the queue's retention." src="docs/images/run-light.svg">
+</picture>
 
 - **An optional key** keeps two runs with that key from being active at once. With the key
   `nightly-import`, an enqueue of a second import adds nothing while one waits or runs;
