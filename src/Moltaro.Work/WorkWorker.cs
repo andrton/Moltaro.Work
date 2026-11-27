@@ -125,10 +125,13 @@ public sealed class WorkWorker
     /// it runs.
     /// </para>
     /// <para>
-    /// Every subscriber is called on its own, in the order of subscription, also when an earlier one threw. An
-    /// exception thrown by a subscriber ends <see cref="RunAsync"/>, after the worker stopped as its stop does: with
-    /// that exception when one subscriber threw, and with an <see cref="AggregateException"/> of all of them when
-    /// more than one threw.
+    /// Every subscriber is called on its own, in the order of subscription, also when an earlier one threw.
+    /// </para>
+    /// <para>
+    /// A raise in which a subscriber threw is the last one. The worker then stops as its stop does and raises
+    /// <see cref="Failed"/> no more, also not for a write that fails during that stop. <see cref="RunAsync"/> ends
+    /// after the stop with that raise's exception, or, when more than one subscriber of that raise threw, with an
+    /// <see cref="AggregateException"/> of that raise's exceptions.
     /// </para>
     /// </remarks>
 #pragma warning disable CS0067 // Exception X2: nothing raises Failed until S7, which raises it and removes this pragma.
@@ -176,7 +179,8 @@ public sealed class WorkWorker
     /// A database error never ends the run: the statement that failed raises <see cref="Failed"/>, and the worker
     /// tries again after <see cref="WorkWorkerOptions.FailureDelay"/>. A wait for the signal that fails other than by
     /// the stop's cancellation ends the run with that exception, after the worker stopped, because the worker could
-    /// then wait for nothing.
+    /// then wait for nothing. A subscriber of <see cref="Failed"/> that throws ends the run after the stop, with the
+    /// exception that the remarks of <see cref="Failed"/> name.
     /// </para>
     /// </remarks>
     /// <exception cref="InvalidOperationException">
@@ -188,6 +192,10 @@ public sealed class WorkWorker
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// Reported by the task when <paramref name="stoppingToken"/> was already cancelled when the method was called.
+    /// </exception>
+    /// <exception cref="AggregateException">
+    /// Reported by the task when more than one subscriber of the last raise of <see cref="Failed"/> threw; when one
+    /// threw, the task reports that subscriber's exception, as the remarks of <see cref="Failed"/> say.
     /// </exception>
     public Task RunAsync(CancellationToken stoppingToken)
     {
