@@ -85,6 +85,24 @@ An entry is numbered `Q1`, `Q2`, … and keeps its number for good:
 | **Until answered** | The documentation of `WorkWorker` names both rules and not the case where they meet. S7, which implements `RunAsync`, does not start before the answer |
 | **Decides** | The planner, with the contract of Stage 2 |
 
+### Q6. Whose clock a worker uses
+
+| | |
+| --- | --- |
+| **Found** | 27 November 2026, in the architect's review after S1 |
+| **Question** | W6 requires the `TimeProvider` of every worker's options to be the clock of the client's `ISignals`, which exposes no clock, so the core cannot check it, and two workers of one client may differ. The planner recommends giving the clock once to the client, `WorkClient(IWorkStore store, ISignals signals, TimeProvider? timeProvider = null)`, where `null` means `TimeProvider.System`, and removing `WorkWorkerOptions.TimeProvider`; S4 would make the change in its contract commit and list it. The alternative is no change. Which one? |
+| **Until answered** | The contract keeps `WorkWorkerOptions.TimeProvider`. S4, whose `AddWork` creates the client, does not start before the answer |
+| **Decides** | The owner |
+
+### Q7. Limits that a column of the schema fixes
+
+| | |
+| --- | --- |
+| **Found** | 27 November 2026, in the architect's review after S1 |
+| **Question** | Principle 10 of `AGENTS.md` says that a limit an application can observe is an option, "never a constant in the code". The lengths of a queue name (100), a key and a scope (200) and a reason (4000) are constants, because the schema's columns fix them. The planner proposes this clause for principle 10: "…; it is never a constant in the code, unless a column of the schema fixes it — the length of a queue name, a key, a scope or a reason: such a limit is part of the schema, stated in `docs/storage.md`, and changes only with the schema's version." Is it taken, in these words or the owner's? |
+| **Until answered** | The constants stay as the plan's "Rules for every public member" fix them |
+| **Decides** | The owner |
+
 ## Answered
 
 None.
