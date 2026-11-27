@@ -157,6 +157,11 @@ here for the owner, with the sprint and the reason.
   clock that `Moltaro.Signals.Hosting` 0.1.0 also gives its `ISignals` by default; the
   owner chose it on the same day over the container's `TimeProvider`, which that package
   does not read. S4 makes it.
+- **S3, a primary key on the version table.** `moltaro_work_schema` gets the primary key
+  `moltaro_work_schema_pk (version)` in all three scripts of version 1. Without it, MySQL with
+  `sql_require_primary_key` refuses the script, and replication that needs a key, MySQL's
+  Group Replication or PostgreSQL's logical replication, refuses to change the version row.
+  From the review of S3, decided by the coordinator while the schema is a draft. S3 makes it.
 
 ## Open questions
 
@@ -1215,7 +1220,9 @@ Opus 5.5, `xhigh` · **Needs:** S2.
   exists, and `AGENTS.md` keeps only its pointer to it; `docs/work/README.md` points to
   `src/Moltaro.Work.slnx` for the projects; `docs/storage.md` and `docs/README.md` call
   what is not built planned, without sprint numbers; "Layout" of `AGENTS.md` gains its
-  missing `Moltaro.Work.TestSupport` row.
+  missing `Moltaro.Work.TestSupport` row. By the owner's decision of 27 November 2026, concept
+  §3 rule 5 and §4 name release and the check of the database, which PQ7 (b) and S1's
+  contract gave the provider.
 - **Out of scope.** Any SQL besides the scripts and the test projects' clock statements.
 
 ### S4 · The hosting contract and the samples
