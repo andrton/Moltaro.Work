@@ -9,13 +9,13 @@ delivered over several sprints.
 
 ## The repository as it is set up
 
-- `src` holds the build settings and the solution with the projects created so far:
-  `Moltaro.Work`, `Moltaro.Work.PostgreSql`, `Moltaro.Work.Tests`,
-  `Moltaro.Work.PostgreSql.Tests`, `Moltaro.Work.TestSupport` and `Moltaro.Work.Samples`. Each
-  later sprint adds the projects that `AGENTS.md` lists as planned when it first needs them.
+- `src` holds the build settings and the solution
+  [`src/Moltaro.Work.slnx`](../../src/Moltaro.Work.slnx), which lists the projects created so
+  far. Each later sprint adds the projects that `AGENTS.md` lists as planned when it first needs
+  them.
 - `src/global.json` names Microsoft.Testing.Platform as the test runner, for xUnit.net v3.
-- CI runs the tests of the PostgreSQL provider on a PostgreSQL service container; SQL Server
-  and MySQL join with S3 of the first epic.
+- CI runs the tests of each provider on its database, PostgreSQL, SQL Server or MySQL, as a
+  service container.
 - The rules of `main` and of release tags are files in `.github/rulesets`. GitHub applies
   them only after the owner does, as [branches and releases](branches.md#setting-it-up-on-github)
   describes.

@@ -5,7 +5,7 @@ Product documentation and active work are kept apart.
 | Document or folder | What it holds | How it changes |
 | --- | --- | --- |
 | [`concept.md`](concept.md) | **The concept**: where the library comes from, its shapes and rules, providers, decisions D1–D16, non-goals and quality bar. The authority for what the library guarantees | A guarantee or a decision changes only with the owner's approval, in the same change as the code that follows it |
-| [`storage.md`](storage.md) | **The provider contract and the schemas**: what each operation does to an item, what the tables mean, and what each database needs. PostgreSQL today; SQL Server and MySQL are written with the sprint that introduces them | With every change of a schema, together with its version |
+| [`storage.md`](storage.md) | **The provider contract and the schemas**: what each operation does to an item, what the tables mean, and what each database needs: PostgreSQL, SQL Server and MySQL | With every change of a schema, together with its version |
 | `explanations/` (planned) | **Explanations** for a reader: the architecture and how claiming, leases, fencing and retries work, each as Markdown and as a self-contained HTML page | As `AGENTS.md`, "Documentation", says |
 | `images/` | **Pictures** that the documents show | With the document that shows them |
 | [`work/`](work/README.md) | **Working documents**: what is being built now. Epics, their goals, requirements and open questions | Often, while the work is in progress. A working document describes intent, not delivered behavior |
