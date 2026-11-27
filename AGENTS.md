@@ -36,6 +36,7 @@ of its modules, tables or customers, in code, tests, samples or documents.
 | `docs/concept.md` | Where the library comes from, its semantics, decisions, non-goals and quality bar |
 | `docs/storage.md` | (planned) The provider contract and the schema of each database, written with the sprint that introduces them |
 | `docs/explanations` | (planned) Explanations of the architecture and of how the library works, each as Markdown and as HTML |
+| `docs/images` | Pictures that the documents show |
 | `docs/work` | Working documents: the epics in progress, the development process, branches and releases, exceptions to the rules, open questions |
 
 Each project is created by the sprint that first needs it, under the name the plan of the
