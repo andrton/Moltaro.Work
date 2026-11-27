@@ -13,7 +13,9 @@ exists as its public contract, documented: its types check their arguments and o
 and every other entry point throws `NotSupportedException`. The PostgreSQL provider
 `Moltaro.Work.PostgreSql` exists as its contract and its schema script of version 1, which
 [storage](docs/storage.md) describes: the script creates the tables on PostgreSQL 15 or later,
-and every operation of its store throws `NotSupportedException`. Nothing below works today.
+and every operation of its store throws `NotSupportedException`. The hosting package
+`Moltaro.Work.Hosting` exists as its contract: `AddWork` and `AddWorkWorker` check their
+arguments and throw `NotSupportedException`. Nothing below works today.
 The first epic, the library up to its first release, is planned in
 [current work](docs/work/README.md); its first stage is the public .NET contract.
 
