@@ -33,7 +33,7 @@ public sealed class WorkTransaction
     // Set once CommitAsync was called, whatever its outcome: the transaction takes no more enqueues and no second commit.
     private bool _commitCalled;
 
-    // Set once an enqueue failed after the store was called: the database may have undone that statement alone, so a
+    // Set once the task of an enqueue faulted or was cancelled: the database may have undone that statement alone, so a
     // commit would keep the application's write without its item.
     private bool _enqueueFailed;
 
@@ -92,15 +92,21 @@ public sealed class WorkTransaction
     /// </remarks>
     /// <exception cref="ArgumentNullException">Thrown by the call: <paramref name="queue"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">
-    /// Thrown by the call: <see cref="CommitAsync"/> was called, an earlier enqueue of this transaction failed or was
-    /// cancelled once it reached the store, or the transaction has ended, so that its connection is
-    /// <see langword="null"/>.
+    /// Thrown by the call: <see cref="CommitAsync"/> was called, the task of an earlier enqueue of this transaction
+    /// faulted or was cancelled, or the transaction has ended, so that its connection is <see langword="null"/>.
     /// </exception>
     /// <exception cref="ArgumentException">
     /// Thrown by the call, with the parameter's name: for a coalescing queue, <paramref name="key"/> is
     /// <see langword="null"/> or a <paramref name="payload"/> is given; <paramref name="key"/> or
     /// <paramref name="scope"/> breaks the rule of a key; a <paramref name="scope"/> is given for a queue that is not
-    /// <see cref="WorkQueue.Scoped"/>; <paramref name="payload"/> breaks its rule. The checks run in this order.
+    /// <see cref="WorkQueue.Scoped"/>; <paramref name="payload"/> breaks its rule. The checks run in this order. After
+    /// them the provider refuses a transaction whose connection is not one of its database, with the
+    /// <see cref="ArgumentException.ParamName"/> <c>transaction</c>. An argument error writes nothing and leaves the
+    /// transaction open for enqueues and the commit.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// Thrown by the call, after the checks: the provider does not implement the enqueue yet. It writes nothing and
+    /// leaves the transaction open.
     /// </exception>
     /// <exception cref="DbException">Reported by the task: the database failed; the driver's exception.</exception>
     /// <exception cref="OperationCanceledException">
@@ -170,17 +176,11 @@ public sealed class WorkTransaction
             return Task.FromCanceled<WorkEnqueueResult>(cancellationToken);
         }
 
-        Task<WorkEnqueueResult> enqueue;
-
-        try
-        {
-            enqueue = _store.EnqueueAsync(_transaction, queue, key, scope, payload, dueAt, cancellationToken);
-        }
-        catch
-        {
-            _enqueueFailed = true;
-            throw;
-        }
+        // What the store throws by the call wrote nothing: an argument error, such as its ArgumentException for a
+        // connection of another database, or its NotSupportedException until the sprint that implements the enqueue.
+        // Like the core's own argument errors it leaves the transaction open; only a task that faulted or was cancelled
+        // closes it.
+        Task<WorkEnqueueResult> enqueue = _store.EnqueueAsync(_transaction, queue, key, scope, payload, dueAt, cancellationToken);
 
         return RememberAsync(enqueue, queue);
     }
@@ -207,8 +207,8 @@ public sealed class WorkTransaction
     /// </para>
     /// </remarks>
     /// <exception cref="InvalidOperationException">
-    /// Thrown by the call: it was called before, or an enqueue of this transaction failed or was cancelled once it
-    /// reached the store.
+    /// Thrown by the call: it was called before, or the task of an enqueue of this transaction faulted or was
+    /// cancelled.
     /// </exception>
     /// <exception cref="NotSupportedException">
     /// Thrown by the call after its checks: committing through the library is not implemented yet.

@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Moltaro.Work\Moltaro.Work.csproj" />
+    <ProjectReference Include="..\Moltaro.Work.PostgreSql\Moltaro.Work.PostgreSql.csproj" />
   </ItemGroup>
 
 </Project>

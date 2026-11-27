@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>The PostgreSQL provider of Moltaro.Work, durable background work for .NET in the application's own database: the store of the items on PostgreSQL 15 or later, with the versioned schema script of its tables, which the application applies with its own migration tool.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Read by PostgreSqlWorkStore.SchemaScript. -->
+    <EmbeddedResource Include="Schema\version-1.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Moltaro.Work\Moltaro.Work.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql" />
+  </ItemGroup>
+
+</Project>

@@ -10,8 +10,11 @@ dead items, clean up by retention, wake at once with
 Contract stage. The [concept](docs/concept.md) is agreed. The core package `Moltaro.Work`
 exists as its public contract, documented: its types check their arguments and options,
 `WorkClient.Join` and `WorkTransaction.EnqueueAsync` hand a checked enqueue to the provider,
-and every other entry point throws `NotSupportedException`. Nothing below works today. The
-first epic, the library up to its first release, is planned in
+and every other entry point throws `NotSupportedException`. The PostgreSQL provider
+`Moltaro.Work.PostgreSql` exists as its contract and its schema script of version 1, which
+[storage](docs/storage.md) describes: the script creates the tables on PostgreSQL 15 or later,
+and every operation of its store throws `NotSupportedException`. Nothing below works today.
+The first epic, the library up to its first release, is planned in
 [current work](docs/work/README.md); its first stage is the public .NET contract.
 
 ## What it is, and what it is not
@@ -143,6 +146,8 @@ published yet. [Branches and releases](docs/work/branches.md) describes how work
 
 - [Concept](docs/concept.md): where it comes from, shapes and rules, providers, decisions
   and quality bar.
+- [Storage](docs/storage.md): the provider contract and the schema of PostgreSQL; those of
+  SQL Server and MySQL are planned.
 - [Documentation index](docs/README.md) and [current work](docs/work/README.md).
 - [How the project is built](AGENTS.md): architectural principles, code style and working
   rules, for people and coding agents.
@@ -159,6 +164,12 @@ dotnet build
 ```bash
 dotnet test
 ```
+
+`MOLTARO_WORK_POSTGRESQL` holds a connection string to PostgreSQL 15 or later. The tests of
+the PostgreSQL provider use it as a server where each run creates a database of its own and
+drops it at the end; without it they fail. The samples, run with
+`dotnet run --project Moltaro.Work.Samples`, use it as a database where they create their
+tables and leave them.
 
 ## License
 

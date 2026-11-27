@@ -2,8 +2,8 @@ using System.Data.Common;
 
 namespace Moltaro.Work.Tests.Doubles;
 
-// The provider of every area of these tests: it records its enqueues and answers each with EnqueueResult. Every other
-// operation throws, because no behavior that reaches one is implemented yet.
+// The provider of every area of these tests: it records its enqueues and answers each with EnqueueResult, or throws
+// EnqueueException by the call. Every other operation throws, because no behavior that reaches one is implemented yet.
 internal sealed class RecordingWorkStore : IWorkStore
 {
     public List<EnqueueCall> EnqueueCalls { get; } = [];
@@ -11,6 +11,9 @@ internal sealed class RecordingWorkStore : IWorkStore
     // The task every enqueue returns: a result, or a faulted or cancelled task.
     public Task<WorkEnqueueResult> EnqueueResult { get; set; } =
         Task.FromResult(new WorkEnqueueResult(WorkEnqueueStatusEnum.Added, 1));
+
+    // When set, what every enqueue throws by the call, after recording it, instead of returning a task.
+    public Exception? EnqueueException { get; set; }
 
     public Task<WorkEnqueueResult> EnqueueAsync(
         DbTransaction transaction,
@@ -22,6 +25,11 @@ internal sealed class RecordingWorkStore : IWorkStore
         CancellationToken cancellationToken)
     {
         EnqueueCalls.Add(new EnqueueCall(transaction, queue, key, scope, payload, dueAt, cancellationToken));
+
+        if (EnqueueException is not null)
+        {
+            throw EnqueueException;
+        }
 
         return EnqueueResult;
     }

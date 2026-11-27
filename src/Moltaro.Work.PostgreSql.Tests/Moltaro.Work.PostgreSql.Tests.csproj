@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The tests of the PostgreSQL provider, on a real PostgreSQL that MOLTARO_WORK_POSTGRESQL names; without it they fail. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Moltaro.Work.PostgreSql\Moltaro.Work.PostgreSql.csproj" />
+    <ProjectReference Include="..\Moltaro.Work.TestSupport\Moltaro.Work.TestSupport.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+</Project>

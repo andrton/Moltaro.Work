@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Moltaro.Work\Moltaro.Work.csproj" />
+    <ProjectReference Include="..\Moltaro.Work.TestSupport\Moltaro.Work.TestSupport.csproj" />
   </ItemGroup>
 
   <ItemGroup>
