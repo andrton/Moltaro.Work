@@ -1,7 +1,7 @@
 # Epic 1: First release
 
-**Status:** approved by the owner on 27 November 2026, with the contract of Stage 1; S1,
-S1R, S2 and S3 done, S4 next.
+**Status:** approved by the owner on 27 November 2026, with the contract of Stage 1; S1 to
+S4 done; the architect's review of Stage 1 and the owner's approval of the samples next.
 
 ## Standing permission
 
@@ -485,7 +485,7 @@ two more databases against a finished conformance suite.
 | S1R | The architect's list after S1 | Refactoring | Done, in two review rounds |
 | S2 | The PostgreSQL provider contract and schema | Full | Done, in two review rounds |
 | S3 | The SQL Server and MySQL provider contracts and schemas | Full | Done, in two review rounds |
-| S4 | The hosting contract and the samples | Full | Not started |
+| S4 | The hosting contract and the samples | Full | Done, in three review rounds |
 | S5 | Coalescing enqueue and the commit that wakes, on PostgreSQL | Full | Not started |
 | S6 | Claim, lease, heartbeat and fenced completion | Full | Not started |
 | S7 | The worker: lanes, waking and stop | Full | Not started |
@@ -1289,8 +1289,8 @@ Opus 5.5, `xhigh` · **Needs:** S2.
 - **To read.** S1's brief; `SignalServiceCollectionExtensions` of `Moltaro.Signals.Hosting`
   0.1.0.
 - **Acceptance.** Tests that pass: the argument checks of both methods; the references of
-  `Moltaro.Work.Hosting` (assemblies of .NET, `Microsoft.Extensions.*.Abstractions`, `Moltaro.Work`,
-  `Moltaro.Signals`); `dotnet pack -c Release` from `src` produces exactly the five
+  `Moltaro.Work.Hosting` (assemblies of .NET, `Microsoft.Extensions.*.Abstractions`,
+  `Moltaro.Work`, `Moltaro.Signals`); `dotnet pack -c Release` from `src` produces exactly the five
   packages. Skipped, folder `Registration`: the client resolves over the registered store
   and `ISignals`; a worker uses a `WorkClient` that the application registered without
   `AddWork`; a worker's handler runs in a scope of its own per item; a worker stops with
