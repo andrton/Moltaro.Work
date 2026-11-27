@@ -301,6 +301,24 @@ public sealed class EnqueueTests : IAsyncDisposable
         CallCommit();
     }
 
+    // A provider refuses a connection of another database by the call, as the core's own argument checks do.
+    [Fact]
+    public async Task An_enqueue_whose_store_throws_by_the_call_leaves_the_transaction_open_for_enqueues_and_the_commit()
+    {
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        _store.EnqueueException = new ArgumentException("The connection is not one of the store's database.", "transaction");
+
+        Assert.Throws<ArgumentException>(
+            "transaction",
+            () => { _ = _transaction.EnqueueAsync(Balances, key: "invoice-7", cancellationToken: cancellationToken); });
+
+        _store.EnqueueException = null;
+        await _transaction.EnqueueAsync(Balances, key: "invoice-7", cancellationToken: cancellationToken);
+
+        Assert.Equal(2, _store.EnqueueCalls.Count);
+        CallCommit();
+    }
+
     // A call with a token that is already cancelled passes the checks of CommitAsync and counts, and gives a cancelled
     // task in every stage: the cancelled task shows that its checks passed.
     private void CallCommit()

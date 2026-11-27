@@ -17,7 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The attributes of the tests, without a runner. -->
+    <!-- The attributes and assertions of the conformance suite, without a runner. -->
+    <PackageReference Include="xunit.v3.assert" />
     <PackageReference Include="xunit.v3.extensibility.core" />
   </ItemGroup>
 

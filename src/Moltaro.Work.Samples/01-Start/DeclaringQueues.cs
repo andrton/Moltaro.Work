@@ -1,4 +1,4 @@
-namespace Moltaro.Work.Samples;
+namespace Moltaro.Work.Samples.Start;
 
 // Declares one queue of each shape and a handler, as a feature of an application does once at its start. A queue is a
 // declaration: nothing here touches a database.
@@ -36,8 +36,6 @@ internal static class DeclaringQueues
         {
             Console.WriteLine($"A wrong name is refused: {exception.Message}");
         }
-
-        Console.WriteLine("Stops here: enqueueing needs the PostgreSQL provider, which is not implemented yet.");
     }
 
     private static void Print(WorkQueue queue)

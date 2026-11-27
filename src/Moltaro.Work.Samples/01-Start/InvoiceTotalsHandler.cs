@@ -1,4 +1,4 @@
-namespace Moltaro.Work.Samples;
+namespace Moltaro.Work.Samples.Start;
 
 // The handler of a coalescing queue: the key names an invoice, and the handler reads the invoice's current state and
 // recomputes its totals. Doing that twice does no harm, which is what makes the handler idempotent.
